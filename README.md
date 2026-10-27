@@ -6,6 +6,7 @@ Local hackathon implementation for the Meta Global AI Developer Hackathon, Start
 
 ## Implemented surface
 
+- Evidence-led landing: real latest completed local run, first-failure recovery, verification checks, and a direct link to the actual Proof Receipt. Fixture planner and target are labeled; no customer or production-performance claims.
 - Autonomous Target Console: enter target + objective + constraints, then **Run agent** starts the complete typed-tool workflow without a second execute button.
 - Chat-driven run creation and read-only investigation mode.
 - Mend coordinator with Inspector, Mapper, Repair, and Verifier roles.

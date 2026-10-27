@@ -1,5 +1,5 @@
 /* TrustPatch · evidence workbench · carbon/mineral/copper/jade */
-:root { --ink:#17201d; --paper:#f4f5ef; --surface:#e9ece4; --border:#cdd2c7; --muted:#59635c; --copper:#b85c38; --copper-dark:#853b22; --copper-subtle:#f1ded2; --verified:#28765c; --verified-subtle:#dce9e0; --error:#9b3f36; --warning:#7a591b; --font-display:"Space Grotesk",Arial,sans-serif; --font-body:"Source Sans 3",Arial,sans-serif; --font-mono:"IBM Plex Mono",monospace; }
+:root { --ink:#17201d; --paper:#f4f5ef; --surface:#e9ece4; --border:#cdd2c7; --muted:#59635c; --copper:#b85c38; --copper-dark:#853b22; --copper-subtle:#f1ded2; --verified:#28765c; --verified-subtle:#dce9e0; --error:#9b3f36; --warning:#7a591b; --font-display:"Space Grotesk",Arial,sans-serif; --font-body:"Inter",Arial,sans-serif; --font-mono:"Geist Mono",monospace; }
 * { box-sizing:border-box; }
 html,body { overflow-x:clip; }
 body { margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); font-size:16px; line-height:1.5; }
