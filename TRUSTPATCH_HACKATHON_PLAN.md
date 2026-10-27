@@ -36,7 +36,7 @@ Not yet exercised:
 - Real GitHub draft-PR creation. The direct REST integration is implemented but requires a user-supplied disposable repository and token.
 - General third-party repository support, remote ownership verification, production deployment, and arbitrary target scanning.
 
-Implementation notes are in `README.md`. The remaining `test:e2e` script is a reserved target for packaging the observed workflow into a repeatable isolated test; the successful proof above was executed through live services and the actual browser UI.
+Implementation notes are in `README.md`. `test:e2e` now packages the real two-attempt workflow with a five-minute timeout and isolated test database; it requires the fixture server on port 3100 and passed in 27 seconds. Reliability follow-up added root `.env` loading, verification/provider recovery polling, worktree reuse, empty-plan rejection, and idempotent PR commit handling.
 
 ---
 

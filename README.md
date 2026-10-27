@@ -33,7 +33,7 @@ pnpm dev
 
 Open `http://localhost:7258`; the fixture runs at `http://localhost:3100`. Patched verification previews use separately allocated ports.
 
-The default `AGENT_MODE=fixture` is deliberately deterministic and labeled in the UI. It is not represented as Meta-model output. To use the real model, set `AGENT_MODE=meta`, `MODEL_API_KEY`, and optionally `MODEL_ID` / `MODEL_API_URL`. Mend uses Meta's Responses API with native structured tool calls.
+The default `AGENT_MODE=fixture` is deliberately deterministic and labeled in the UI. It is not represented as Meta-model output. The Meta Responses API integration is **implemented but not exercised end-to-end** because no API credential is available in this environment. To enable it for verification, set `AGENT_MODE=meta`, `MODEL_API_KEY`, and optionally `MODEL_ID` / `MODEL_API_URL` in the root `.env`.
 
 ## Verification
 
