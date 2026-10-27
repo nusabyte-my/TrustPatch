@@ -7,9 +7,10 @@ Local hackathon implementation for the Meta Global AI Developer Hackathon, Start
 ## Implemented surface
 
 - Evidence-led landing: real latest completed local run, first-failure recovery, verification checks, and a direct link to the actual Proof Receipt. Fixture planner and target are labeled; no customer or production-performance claims.
-- Autonomous Target Console: enter target + objective + constraints, then **Run agent** starts the complete typed-tool workflow without a second execute button.
+- Interactive Agent Command Center: six selectable roles, live specialist activity, compact approval/Proof panel, and on-demand evidence/diff/activity drawer. Mapper emits real repository and worktree mapping events.
+- Autonomous Target Console: enter target + objective + constraints, then **Run agent** starts the complete typed-tool workflow without a second execute button. Tool plan is collapsed by default.
 - Chat-driven run creation and read-only investigation mode.
-- Mend coordinator with Inspector, Mapper, Repair, and Verifier roles.
+- Mend coordinator with Inspector, Mapper, SEO, Repair, and Verifier roles.
 - Raw HTML, rendered DOM, headers, screenshots, source context, diffs, and verification artifacts persisted with SHA-256 metadata.
 - Scoped approval digest with file allowlist and in-scope revision checks.
 - Isolated Git worktree repair for the authorized Next.js fixture.
@@ -50,7 +51,7 @@ The default `AGENT_MODE=fixture` is deliberately deterministic and labeled in th
 
 ## Verification
 
-Exercised successfully on October 27, 2026:
+Exercised successfully on October 27–28, 2026, including a complete compact multiagent run: role selection, real Mapper events, approval, recovery, validation, follow-up, evidence drawer, and 375px mobile layout:
 
 ```bash
 pnpm typecheck

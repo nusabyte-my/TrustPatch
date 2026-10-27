@@ -67,6 +67,8 @@
 .impact-after ul { padding-left:0; }
 .impact-after li strong,.impact-after li span { display:block; }
 .impact-after li span { font-size:12px; color:var(--landing-muted); margin-top:2px; }
+.impact-before li strong,.impact-before li span { display:block; }
+.impact-before li span { font-size:12px; margin-top:3px; }
 .impact-meta { display:flex; flex-wrap:wrap; gap:8px 26px; padding-top:20px; color:var(--landing-muted); font-size:12px; }
 .impact-meta strong { font-family:"Geist Mono",monospace; font-weight:400; font-size:11px; color:var(--landing-ink); }
 .impact-empty { border:1px dashed #d5c3e8; padding:32px; border-radius:16px; }

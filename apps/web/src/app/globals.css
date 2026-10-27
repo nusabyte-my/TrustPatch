@@ -133,7 +133,10 @@ textarea { display:block; width:100%; resize:vertical; border:1px solid var(--bo
 .console-heading>span { max-width:320px; color:var(--muted); font-size:13px; text-align:right; }
 .console-options { display:grid; grid-template-columns:1fr 1.2fr auto; gap:20px; align-items:end; margin-top:16px; }
 .console-options input:not([type="checkbox"]) { width:100%; padding:12px; border:1px solid var(--border); background:#fafbf7; }
-.tool-plan { margin-top:24px; border-top:1px solid var(--border); }
+.tool-plan { margin-top:16px; border-top:1px solid var(--border); }
+.tool-plan summary { cursor:pointer; padding-top:12px; font-size:13px; color:var(--copper-dark); }
+.tool-plan summary:focus-visible { outline:2px solid var(--copper-dark); outline-offset:4px; }
+.tool-plan summary::marker { color:var(--copper-dark); }
 .tool-target { display:flex; gap:16px; align-items:center; flex-wrap:wrap; padding:16px 0; font-size:13px; }
 .tool-target strong { font-family:var(--font-mono); font-size:12px; }
 .tool-target>span:last-child { margin-left:auto; color:var(--verified); }

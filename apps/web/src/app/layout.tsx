@@ -7,6 +7,7 @@ import "@fontsource/inter/600.css";
 import "@fontsource/geist-mono/400.css";
 import "./globals.css";
 import "./landing.css";
+import "./agent-command.css";
 
 export const metadata: Metadata = { title: "TrustPatch — Watch a real repair happen", description: "Give Mend a website target. Inspect evidence, approve an isolated repair, and verify the result." };
 export default function RootLayout({ children }: { children: ReactNode }) {
