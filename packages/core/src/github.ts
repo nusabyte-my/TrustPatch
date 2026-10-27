@@ -20,7 +20,10 @@ export async function publishDraftPr(store: TrustpatchDb, runId: string, contrac
   const worktree = resolve(contract.repositoryPath, "..", ".trustpatch-worktrees", runId);
   const basic = Buffer.from(`x-access-token:${token}`).toString("base64");
   try {
-    await execFileAsync("git", ["-C", worktree, "-c", "user.name=TrustPatch Mend", "-c", "user.email=mend@trustpatch.local", "commit", "-m", "Repair verified website findings"]);
+    const staged = await execFileAsync("git", ["-C", worktree, "diff", "--cached", "--name-only"]);
+    if (staged.stdout.trim()) {
+      await execFileAsync("git", ["-C", worktree, "-c", "user.name=TrustPatch Mend", "-c", "user.email=mend@trustpatch.local", "commit", "-m", "Repair verified website findings"]);
+    }
     await execFileAsync("git", ["-c", `http.extraHeader=Authorization: Basic ${basic}`, "-C", worktree, "push", `https://github.com/${owner}/${repo}.git`, `HEAD:refs/heads/${proof.branch}`]);
     const headers = { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28", "Content-Type": "application/json" };
     const repositoryResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}`, { headers });

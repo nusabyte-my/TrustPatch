@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve, sep } from "node:path";
 import { promisify } from "node:util";
 import { load } from "cheerio";
@@ -34,11 +34,16 @@ export async function createRepairBranch(repositoryPath: string, runId: string, 
   const worktree = safeWorktree(repositoryPath, runId);
   const branch = `trustpatch/${runId.replace(/^run_/, "").slice(0, 12)}`;
   const gitDir = trustpatchPaths().fixtureGitDir;
-  await execFileAsync("git", [`--git-dir=${gitDir}`, `--work-tree=${repositoryPath}`, "worktree", "add", "--detach", worktree, baseBranch]);
-  await execFileAsync("git", ["-C", worktree, "switch", "-c", branch]);
+  if (!existsSync(worktree)) {
+    await execFileAsync("git", [`--git-dir=${gitDir}`, `--work-tree=${repositoryPath}`, "worktree", "add", "--detach", worktree, baseBranch]);
+  }
+  await execFileAsync("git", ["-C", worktree, "switch", branch]).catch(async () => {
+    await execFileAsync("git", ["-C", worktree, "switch", "-c", branch]);
+  });
   return { branch, worktree };
 }
 export async function applyRepairPlan(store: TrustpatchDb, runId: string, contract: RunContract, approval: Approval, plan: RepairPlan, attempt: number): Promise<RepairResult> {
+  if (!plan.edits.length) throw new Error("Planner produced no applicable edits; run blocked without claiming a repair");
   const { branch, worktree } = attempt === 0
     ? await createRepairBranch(contract.repositoryPath, runId, contract.baseBranch)
     : { branch: `trustpatch/${runId.replace(/^run_/, "").slice(0, 12)}`, worktree: safeWorktree(contract.repositoryPath, runId) };

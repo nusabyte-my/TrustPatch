@@ -55,6 +55,8 @@ Actual local acceptance path:
 3. Approve the repair. The worker builds the patched worktree on a separate local preview port.
 4. Read the failed-first-attempt evidence, successful in-scope recovery, and Proof Receipt.
 
+The default `FIXTURE_RECOVERY=true` deliberately removes only the page-level indexing override on attempt 1. Verification then exposes the inherited layout `noindex`; attempt 2 repairs the layout within the approved file scope. Set `FIXTURE_RECOVERY=false` for a single-attempt deterministic run.
+
 ## GitHub publication
 
 Optional and never required for local validation. Set server-side `GITHUB_TOKEN`, `GITHUB_OWNER`, and `GITHUB_REPO` to publish a validated branch as a draft PR. Use a fine-grained token restricted to a disposable demo repository. The implementation never merges or deploys.
@@ -70,4 +72,4 @@ This build accepts only the explicitly authorized local fixture by default. It d
 - GitHub publication is implemented but requires a user-provided disposable repository for end-to-end verification.
 - Local development currently uses a single worker and synchronous investigation request; durable queue-backed investigation is a production hardening step.
 - The real Meta Model API and GitHub draft-PR paths still require credentials for live verification.
-- `test:e2e` remains a reserved script target for packaging the observed workflow into an isolated repeatable test. The real UI proof was completed on October 27, 2026: two attempts, first verification failure, second in-scope recovery, and all three checks validated.
+- `test:e2e` runs the real two-attempt workflow against the local fixture on port 3100, using an isolated database and two real Next.js builds. It expects the fixture server to be running.

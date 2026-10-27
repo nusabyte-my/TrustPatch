@@ -131,7 +131,7 @@ export async function startWorker() {
   const store = await createRuntime();
   const active = new Set<string>();
   const timer = setInterval(async () => {
-    const pending = store.sqlite.prepare("SELECT id FROM runs WHERE status = 'repairing'").all() as Array<{ id: string }>;
+    const pending = store.sqlite.prepare("SELECT id FROM runs WHERE status IN ('repairing', 'verifying', 'paused_provider_error')").all() as Array<{ id: string }>;
     for (const run of pending) {
       if (active.has(run.id)) continue;
       active.add(run.id);

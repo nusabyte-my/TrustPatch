@@ -8,6 +8,10 @@ dist/
 artifacts/
 logs/
 .trustpatch-worktrees/
+**/.trustpatch-worktrees/
+final-run.json
+services.html
+AGENTS.md
 playwright-report/
 test-results/
 *.tsbuildinfo
