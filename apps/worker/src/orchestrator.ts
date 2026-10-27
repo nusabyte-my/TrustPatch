@@ -33,6 +33,8 @@ export async function executeRun(store: TrustpatchDb, runId: string): Promise<Ru
         seenPolicyDefects.add(finding.kind);
         return true;
       });
+      const repairCandidates = findings.filter((finding) => ["noindex", "canonical", "security_header"].includes(finding.kind));
+      const seoReviewCount = findings.length - repairCandidates.length;
       const withSources = findings.map((finding) => ({
         ...finding,
         sourceFiles: finding.kind === "security_header" ? ["next.config.ts"] : finding.kind === "noindex" ? ["app/services/page.tsx", "app/layout.tsx"] : ["app/services/page.tsx"]
@@ -40,6 +42,14 @@ export async function executeRun(store: TrustpatchDb, runId: string): Promise<Ru
       saveFindings(store, withSources);
       proof.findings = withSources;
       addEvent(store, runId, "inspector", "activity", withSources.length ? `Inspection complete: ${withSources.length} confirmed issue${withSources.length === 1 ? "" : "s"} need review. No code has been changed.` : "Inspection complete: no selected defects found. No code has been changed.", { activity: "inspection", status: withSources.length ? "warning" : "success", count: withSources.length, repositoryEvidenceId: mapped.evidenceId });
+      if (contract.readOnly) {
+        proof.status = "validated";
+        saveProof(store, runId, proof);
+        setStatus(store, runId, "validated");
+        addEvent(store, runId, "mend", "activity", "Read-only investigation complete. No repair branch or repository mutation created.", { activity: "completion", status: "success" });
+        return getRunView(store, runId);
+      }
+      if (seoReviewCount) addEvent(store, runId, "mend", "activity", `${seoReviewCount} SEO opportunities are separated from code-repair candidates; they require content or configuration review.`, { activity: "seo", status: "info", count: seoReviewCount });
       if (!withSources.length) {
         proof.status = "validated";
         saveProof(store, runId, proof);
@@ -54,6 +64,14 @@ export async function executeRun(store: TrustpatchDb, runId: string): Promise<Ru
         addEvent(store, runId, "mend", "activity", "Read-only investigation complete. No repair branch or repository mutation created.", { activity: "completion", status: "success" });
         return getRunView(store, runId);
       }
+      if (!repairCandidates.length) {
+        proof.status = "validated";
+        saveProof(store, runId, proof);
+        setStatus(store, runId, "validated");
+        addEvent(store, runId, "mend", "activity", "SEO and AI-search analysis complete. These are review opportunities, not automatic rewrites or ranking guarantees.", { activity: "completion", status: "success" });
+        return getRunView(store, runId);
+      }
+      saveFindings(store, withSources.filter((finding) => finding.kind.startsWith("seo_")).map((finding) => ({ ...finding, state: "out_of_scope" as const })));
       requestApproval(store, runId, contract.scope, contract.createPr);
       saveProof(store, runId, { ...proof, status: "awaiting_approval" });
       return getRunView(store, runId);

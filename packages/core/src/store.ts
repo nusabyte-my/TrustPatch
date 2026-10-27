@@ -41,8 +41,8 @@ export function approvalDigest(approval: Omit<Approval, "scopeDigest">) {
   return createHash("sha256").update(JSON.stringify({ findingIds: [...approval.findingIds].sort(), allowedFiles: [...approval.allowedFiles].sort(), createPr: approval.createPr })).digest("hex");
 }
 export function requestApproval(store: TrustpatchDb, runId: string, scope: Scope, createPr: boolean) {
-  const found = getFindings(store, runId);
-  if (!found.length) throw new Error("No findings to approve");
+  const found = getFindings(store, runId).filter((finding) => ["noindex", "canonical", "security_header"].includes(finding.kind));
+  if (!found.length) throw new Error("No repairable findings to approve");
   const required = new Set<string>();
   if (found.some((f) => f.kind === "noindex")) { required.add("app/services/page.tsx"); required.add("app/layout.tsx"); }
   if (found.some((f) => f.kind === "canonical")) required.add("app/services/page.tsx");
@@ -52,7 +52,7 @@ export function requestApproval(store: TrustpatchDb, runId: string, scope: Scope
   const approval: Approval = { ...base, scopeDigest: approvalDigest(base) };
   store.db.update(store.runs).set({ approvalJson: JSON.stringify(approval), approvalDigest: approval.scopeDigest, approvalGranted: 0, updatedAt: now() }).where(eq(store.runs.id, runId)).run();
   setStatus(store, runId, "awaiting_approval");
-  addEvent(store, runId, "mend", "activity", `I found ${found.length} issue${found.length === 1 ? "" : "s"}. Review the exact files and permissions before I create a repair branch.`, { activity: "approval", status: "warning", ...approval } as unknown as Record<string, unknown>);
+  addEvent(store, runId, "mend", "activity", `I found ${found.length} issue${found.length === 1 ? "" : "s"}. Review the exact files and permissions before I create a repair branch.`, { activity: "approval", status: "warning", count: found.length });
 }
 export function grantApproval(store: TrustpatchDb, runId: string, scopeDigest: string) {
   const row = store.db.select().from(store.runs).where(eq(store.runs.id, runId)).get();

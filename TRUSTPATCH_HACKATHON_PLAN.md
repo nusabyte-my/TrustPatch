@@ -28,6 +28,8 @@ Verified in the actual application:
 - The actual UI completed the same flow on port 7258, with `Validated locally` and three passing checks.
 - Browser check at 1440px and emulated 375px reported no horizontal document overflow.
 - Live Mend activity stream verified in the browser: queued run, per-URL inspections, vulnerability alerts, approval scope, first failed verification, second repair, and final validation.
+- Expanded SEO/AEO/GEO agent evaluates metadata, social previews, semantic structure, JSON-LD, content depth, internal links, answer extractability, robots, and sitemaps without ranking guarantees.
+- Scoped bulk authorized-site audit added with domain/TLD validation, passive-only contracts, and per-site progress. `DEPLOYMENT.md` documents local and single-VM deployment.
 - Regression tests: 5 passing. Workspace TypeScript checks and production builds pass for contracts, core, fixture, and web.
 - Evidence writes are idempotent for identical bytes; approvals are consumed atomically once; empty approvals are rejected; CRLF anchors are supported.
 

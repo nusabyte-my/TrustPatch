@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState, type FormEvent } from "react";
 import type { RunEvent, RunView } from "@trustpatch/contracts";
 import { TrustPatchMark } from "./logo";
 import { ActivityFeed } from "./activity-feed";
+import { BulkAudit } from "./bulk-audit";
+import { UsageGuide } from "./usage-guide";
 
 const starter = "Inspect the staging site. Fix confirmed indexing and security-header defects, but do not touch /blog. Stop before opening a PR.";
 const terminal = new Set(["validated", "blocked", "cancelled"]);
@@ -22,6 +24,7 @@ export function Workbench() {
   const [error, setError] = useState("");
   const [selectedEvidence, setSelectedEvidence] = useState<string | null>(null);
   const [diff, setDiff] = useState("");
+  const [loadedRunId, setLoadedRunId] = useState<string | null>(null);
 
   const refresh = useCallback(async (id: string) => {
     const response = await fetch(`/api/runs/${id}`, { cache: "no-store" });
@@ -30,6 +33,12 @@ export function Workbench() {
     setRun(data.run);
     setEvents(data.events);
   }, []);
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get("run");
+    if (!id || id === loadedRunId) return;
+    setLoadedRunId(id);
+    void refresh(id).catch(() => setError("Stored run could not be loaded"));
+  }, [loadedRunId, refresh]);
   useEffect(() => {
     if (!run || terminal.has(run.status) || run.status === "awaiting_approval") return;
     const timer = setInterval(() => { void refresh(run.id).catch(() => undefined); }, 1500);
@@ -88,15 +97,17 @@ export function Workbench() {
   return <>
     <header className="topbar"><a className="brand" href="/" aria-label="TrustPatch home"><TrustPatchMark /><span>TrustPatch</span></a><div className="environment"><span className="signal" /> Local verified fixture <span className="divider">/</span> Mend + 4 specialists</div></header>
     <main id="main" className="workbench">
+      <UsageGuide />
       <section className="intro"><div><p className="kicker">Repair workbench</p><h1>From finding<br />to proof.</h1></div><p>Tell Mend what to repair. Inspector and Mapper investigate in parallel. You approve the scope. Verifier proves the result.</p></section>
       <section className="command" aria-labelledby="objective-label"><div className="presets" aria-label="Instruction presets"><button onClick={() => preset("Investigate the staging site only. Explain confirmed findings; do not patch.")}>Investigate only</button><button onClick={() => preset(starter)}>Repair selected findings</button><button onClick={() => preset(`${starter} Do not open a pull request.`)}>Stop before pull request</button></div><form onSubmit={submit}><label id="objective-label" htmlFor="objective">What should Mend accomplish?</label><textarea id="objective" value={objective} onChange={(event) => setObjective(event.target.value)} rows={3} required /><div className="command-bottom"><span>Read-only investigation starts immediately. Mutations need your approval.</span><button className="primary" disabled={busy || objective.trim().length < 3}>{busy ? "Working…" : run ? "Start new run" : "Inspect and plan repair"}<span aria-hidden="true">↗</span></button></div></form></section>
+      <BulkAudit />
       {error && <div className="error" role="alert">{error}</div>}
       {!run && <section className="empty"><div className="empty-index">01</div><div><h2>One controlled repair loop.</h2><p>Real website evidence, isolated code changes, and independent browser verification. No autonomous merge. No deployment.</p></div><div className="roles"><span>Mend · coordinates</span><span>Inspector · observes</span><span>Mapper · locates</span><span>Repair · patches</span><span>Verifier · proves</span></div></section>}
       {run && <div className="run-layout">
         <section className="run-main" aria-label="Repair run">
           <div className="run-heading"><div><p className="mono run-id">{run.id}</p><h2>{run.contract.objective}</h2></div><span className={`status status-${run.status}`}>{statusLabels[run.status] ?? run.status}</span></div>
           <div className="progress" aria-label={`Run progress ${progress}%`}><span style={{ width: `${progress}%` }} /></div>
-          <div className="run-meta"><span>Planner <strong>{run.proof?.planner ?? "pending"}</strong></span><span>Target <strong>{new URL(run.contract.targetUrl).host}</strong></span><span>Deployment <strong>Not permitted</strong></span></div>
+          <div className="run-meta"><span>Planner <strong>{run.proof?.planner ?? "pending"}</strong></span><span>Checking <strong className="target-url">{run.contract.targetUrl}</strong></span><span>Deployment <strong>Not permitted</strong></span></div>
           {run.status === "awaiting_approval" && run.approval && <section className="approval" aria-labelledby="approval-title"><p className="kicker">Authority boundary</p><h3 id="approval-title">Approve this exact repair scope</h3><p>Mend can change only these files in an isolated branch. Self-repair beyond this scope pauses for approval again.</p><div className="scope-grid"><div><h4>Findings</h4><strong>{run.approval.findingIds.length}</strong></div><div><h4>Draft PR</h4><strong>{run.approval.createPr ? "Allowed after validation" : "Not allowed"}</strong></div></div><h4>Allowed files</h4><ul className="file-list">{run.approval.allowedFiles.map((file) => <li key={file}>{file}</li>)}</ul><p className="digest">Scope digest <span>{run.approval.scopeDigest.slice(0, 18)}…</span></p><button className="primary" onClick={approve} disabled={busy}>{busy ? "Repairing and verifying…" : "Approve scoped repair"}</button></section>}
           <section className="findings" aria-labelledby="findings-title"><div className="section-heading"><h3 id="findings-title">Findings</h3><span>{findings.length} observed</span></div>{findings.length === 0 && <p className="muted">Evidence will appear after inspection.</p>}{findings.map((finding) => <article className="finding" key={finding.id}><div className="finding-top"><span className="finding-kind">{finding.kind.replace("_", " ")}</span><span className="finding-state">{finding.state}</span></div><h4>{finding.title}</h4><p>{finding.summary}</p><p className="mono">{finding.url}</p><div className="evidence-links">{finding.evidenceIds.slice(0, 3).map((id, index) => <button key={id} onClick={() => setSelectedEvidence(selectedEvidence === id ? null : id)} aria-expanded={selectedEvidence === id}>{index === 0 ? "Raw" : index === 1 ? "Rendered" : "Headers"} evidence</button>)}</div>{selectedEvidence === finding.evidenceIds[0] && <Evidence id={finding.evidenceIds[0]!} />}{selectedEvidence === finding.evidenceIds[1] && <Evidence id={finding.evidenceIds[1]!} />}{selectedEvidence === finding.evidenceIds[2] && <Evidence id={finding.evidenceIds[2]!} />}</article>)}</section>
           {diff && <section className="diff"><div className="section-heading"><h3>Proposed repair</h3><span>Stored complete diff</span></div><pre tabIndex={0}>{diff}</pre></section>}

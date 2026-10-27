@@ -23,6 +23,16 @@ CREATE TABLE IF NOT EXISTS findings (
   evidence_ids_json TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS findings_run_id ON findings(run_id);
+CREATE TABLE IF NOT EXISTS bulk_jobs (
+  id TEXT PRIMARY KEY, scope_domain TEXT NOT NULL, targets_json TEXT NOT NULL,
+  status TEXT NOT NULL, created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS bulk_site_runs (
+  id TEXT PRIMARY KEY, bulk_job_id TEXT NOT NULL REFERENCES bulk_jobs(id) ON DELETE CASCADE,
+  run_id TEXT NOT NULL REFERENCES runs(id) ON DELETE CASCADE, target_url TEXT NOT NULL,
+  CONSTRAINT bulk_site_run_unique UNIQUE(bulk_job_id, run_id)
+);
+CREATE INDEX IF NOT EXISTS bulk_site_runs_job ON bulk_site_runs(bulk_job_id);
 CREATE TABLE IF NOT EXISTS tool_calls (
   id TEXT PRIMARY KEY, run_id TEXT NOT NULL REFERENCES runs(id) ON DELETE CASCADE,
   idempotency_key TEXT NOT NULL, tool TEXT NOT NULL, status TEXT NOT NULL,

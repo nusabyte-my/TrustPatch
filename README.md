@@ -14,6 +14,8 @@ Local hackathon implementation for the Meta Global AI Developer Hackathon, Start
 - Independent patched-worktree build and preview verification.
 - Read-only, `noindex`, canonical, and `X-Content-Type-Options` workflows.
 - Live Mend activity stream: queued inspection, per-URL checks, vulnerability alerts, approval requests, patch attempts, failed verification, and completion states.
+- SEO/AEO/GEO analysis: metadata, social previews, semantic structure, JSON-LD, content depth, internal links, answer extractability, robots, and sitemap discovery.
+- Scoped bulk authorized-site auditing with passive checks, per-site progress, and failure isolation.
 - Findings, approval card, diff viewer, and Proof Receipt UI.
 - Meta Responses API tool-call planner for `AGENT_MODE=meta`; labeled deterministic `fixture-planner` for offline development.
 - GitHub draft-PR publication when credentials are configured; no merge or deployment path.
@@ -32,7 +34,7 @@ cp .env.example .env
 pnpm dev
 ```
 
-Open `http://localhost:7258`; the fixture runs at `http://localhost:3100`. Patched verification previews use separately allocated ports.
+Open `http://localhost:7258`; the fixture runs at `http://localhost:3100`. Patched verification previews use separately allocated ports. See `USING_TRUSTPATCH.md` for the user workflow and `DEPLOYMENT.md` for production build, single-VM process, reverse-proxy, backup, and bulk-audit authorization instructions.
 
 The default `AGENT_MODE=fixture` is deliberately deterministic and labeled in the UI. It is not represented as Meta-model output. The Meta Responses API integration is **implemented but not exercised end-to-end** because no API credential is available in this environment. To enable it for verification, set `AGENT_MODE=meta`, `MODEL_API_KEY`, and optionally `MODEL_ID` / `MODEL_API_URL` in the root `.env`.
 

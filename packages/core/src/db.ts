@@ -15,6 +15,8 @@ export interface TrustpatchDb {
   evidence: typeof schema.evidence;
   findings: typeof schema.findings;
   toolCalls: typeof schema.toolCalls;
+  bulkJobs: typeof schema.bulkJobs;
+  bulkSiteRuns: typeof schema.bulkSiteRuns;
 }
 export function createDatabase(path?: string): TrustpatchDb {
   const filename = path ? resolve(path) : trustpatchPaths().database;
@@ -24,7 +26,17 @@ export function createDatabase(path?: string): TrustpatchDb {
   sqlite.pragma("foreign_keys = ON");
   sqlite.pragma("busy_timeout = 5000");
   const db = drizzle(sqlite, { schema });
-  return { db, sqlite, ...schema };
+  return {
+    db,
+    sqlite,
+    runs: schema.runs,
+    events: schema.events,
+    evidence: schema.evidence,
+    findings: schema.findings,
+    toolCalls: schema.toolCalls,
+    bulkJobs: schema.bulkJobs,
+    bulkSiteRuns: schema.bulkSiteRuns
+  };
 }
 export function migrateDatabase(sqlite: Database.Database) {
   const migration = resolve(dirname(fileURLToPath(import.meta.url)), "../migrations/0001_init.sql");

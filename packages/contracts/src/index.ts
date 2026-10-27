@@ -1,18 +1,21 @@
 import { z } from "zod";
 
 export const AGENT_NAME = "Mend";
-export const agentRoleSchema = z.enum(["mend", "inspector", "mapper", "repair", "verifier"]);
+export const agentRoleSchema = z.enum(["mend", "inspector", "mapper", "repair", "verifier", "seo"]);
 export type AgentRole = z.infer<typeof agentRoleSchema>;
 export const runStatusSchema = z.enum([
   "queued", "investigating", "awaiting_approval", "repairing", "verifying",
   "awaiting_user", "validated", "blocked", "paused_provider_error", "cancelled"
 ]);
 export type RunStatus = z.infer<typeof runStatusSchema>;
-export const findingKindSchema = z.enum(["noindex", "canonical", "security_header"]);
+export const findingKindSchema = z.enum([
+  "noindex", "canonical", "security_header", "seo_metadata", "seo_social",
+  "seo_structure", "seo_schema", "seo_content", "seo_links", "seo_crawl", "seo_answer"
+]);
 export type FindingKind = z.infer<typeof findingKindSchema>;
 export const findingStateSchema = z.enum(["observed", "verified", "approved", "repaired", "validated", "blocked", "out_of_scope"]);
 export const scopeSchema = z.object({
-  includeChecks: z.array(findingKindSchema).default(["noindex", "canonical", "security_header"]),
+  includeChecks: z.array(findingKindSchema).default(["noindex", "canonical", "security_header", "seo_metadata", "seo_social", "seo_structure", "seo_schema", "seo_content", "seo_links", "seo_crawl", "seo_answer"]),
   excludeChecks: z.array(findingKindSchema).default([]),
   includePaths: z.array(z.string()).default([]),
   excludePaths: z.array(z.string()).default([]),

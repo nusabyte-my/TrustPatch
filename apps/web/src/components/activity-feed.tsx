@@ -1,7 +1,7 @@
 import type { RunEvent } from "@trustpatch/contracts";
 
 const roleLabels: Record<string, string> = {
-  mend: "Mend", inspector: "Inspector", mapper: "Mapper", repair: "Repair", verifier: "Verifier"
+  mend: "Mend", inspector: "Inspector", mapper: "Mapper", repair: "Repair", verifier: "Verifier", seo: "SEO"
 };
 const statusLabels: Record<string, string> = {
   active: "Working", info: "Observed", success: "Passed", warning: "Attention"
@@ -17,7 +17,7 @@ export function ActivityFeed({ events }: { events: RunEvent[] }) {
     {activities.length === 0 ? <p className="muted">Waiting for the worker to begin inspection…</p> : <ol className="activity-list">{activities.map((event) => {
       const state = typeof event.data.status === "string" ? event.data.status : "info";
       const kind = typeof event.data.activity === "string" ? event.data.activity : "inspection";
-      return <li className={`activity-item activity-${state}`} key={event.id}>
+      return <li className={`activity-item activity-${state} ${kind === "vulnerability" ? "activity-vulnerability" : ""}`} key={event.id}>
         <span className="activity-marker" aria-hidden="true" />
         <div className="activity-content">
           <div className="activity-meta"><span className="activity-role">{roleLabels[event.role]}</span><span className={`activity-badge activity-badge-${state}`}>{statusLabels[state] ?? state}</span><span className="activity-kind">{kind}</span><time dateTime={event.createdAt}>{new Date(event.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</time></div>

@@ -5,12 +5,14 @@ import type { Finding, RunContract } from "@trustpatch/contracts";
 import type { TrustpatchDb } from "./db";
 import { storeEvidence } from "./evidence";
 import { addEvent } from "./store";
+import { analyzeSeoPage, inspectSearchPolicy } from "./seo";
 
 export async function inspectSite(store: TrustpatchDb, runId: string, contract: RunContract): Promise<Finding[]> {
   const findings: Finding[] = [];
   const enabled = (kind: Finding["kind"]) => contract.scope.includeChecks.includes(kind) && !contract.scope.excludeChecks.includes(kind);
   const paths = contract.scope.includePaths.filter((path) => !contract.scope.excludePaths.some((excluded) => path === excluded || path.startsWith(`${excluded}/`))).slice(0, contract.maxPages);
   const browser = await chromium.launch({ headless: true });
+  const policy = await inspectSearchPolicy(store, runId, contract);
   try {
     const page = await browser.newPage();
     for (const path of paths) {
@@ -32,6 +34,9 @@ export async function inspectSite(store: TrustpatchDb, runId: string, contract: 
       const robots = $("meta[name='robots']").attr("content")?.toLowerCase() ?? "";
       const canonical = $("link[rel='canonical']").attr("href") ?? null;
       const common = { runId, state: "observed" as const, url, sourceFiles: [], evidenceIds: [rawEvidence.id, renderedEvidence.id, headerEvidence.id, screenshot.id] };
+      const seoFindings = analyzeSeoPage(store, $, { ...common, path, title: $("title").text(), description: "", status, headers }, contract);
+      findings.push(...seoFindings);
+      addEvent(store, runId, "seo", "activity", `SEO analysis complete on ${path}: ${seoFindings.length} evidence-backed opportunities.`, { activity: "seo", status: seoFindings.length ? "warning" : "success", count: seoFindings.length, url });
       if (enabled("noindex") && /noindex/.test(robots)) {
         const finding: Finding = {
           ...common, id: `find_${randomUUID()}`, kind: "noindex", title: "Indexing blocked",

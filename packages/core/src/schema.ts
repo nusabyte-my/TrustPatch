@@ -30,6 +30,16 @@ export const findings = sqliteTable("findings", {
   url: text("url").notNull(), summary: text("summary").notNull(), observedJson: text("observed_json").notNull(),
   sourceFilesJson: text("source_files_json").notNull(), evidenceIdsJson: text("evidence_ids_json").notNull()
 });
+export const bulkJobs = sqliteTable("bulk_jobs", {
+  id: text("id").primaryKey(), scopeDomain: text("scope_domain").notNull(),
+  targetsJson: text("targets_json").notNull(), status: text("status").notNull(),
+  createdAt: text("created_at").notNull()
+});
+export const bulkSiteRuns = sqliteTable("bulk_site_runs", {
+  id: text("id").primaryKey(), bulkJobId: text("bulk_job_id").notNull().references(() => bulkJobs.id, { onDelete: "cascade" }),
+  runId: text("run_id").notNull().references(() => runs.id, { onDelete: "cascade" }),
+  targetUrl: text("target_url").notNull()
+});
 export const toolCalls = sqliteTable("tool_calls", {
   id: text("id").primaryKey(), runId: text("run_id").notNull().references(() => runs.id, { onDelete: "cascade" }),
   idempotencyKey: text("idempotency_key").notNull(), tool: text("tool").notNull(),

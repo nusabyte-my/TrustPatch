@@ -9,6 +9,8 @@
     "dev:web": "pnpm --filter @trustpatch/web dev",
     "dev:worker": "pnpm --filter @trustpatch/worker dev",
     "dev:fixture": "pnpm --filter @trustpatch/fixture dev",
+    "start:web": "pnpm --filter @trustpatch/web exec next start -p 7258",
+    "start:worker": "pnpm --filter @trustpatch/worker exec tsx src/index.ts",
     "build": "pnpm --filter @trustpatch/contracts build && pnpm --filter @trustpatch/core build && pnpm --filter @trustpatch/fixture build && pnpm --filter @trustpatch/web build",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm --filter @trustpatch/core test && pnpm --filter @trustpatch/worker test",
