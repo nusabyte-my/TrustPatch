@@ -7,10 +7,11 @@ describe("authorized bulk target scoping", () => {
     expect(parseScopeDomain("https://Example.com/")).toBe("example.com");
     expect(assertTargetInScope("https://docs.example.com", "example.com").hostname).toBe("docs.example.com");
     expect(() => assertTargetInScope("https://other.test", "example.com")).toThrow("outside approved scope");
-    expect(() => assertTargetInScope("http://127.0.0.1:3100", "example.com")).toThrow("Loopback");
+    expect(() => assertTargetInScope("http://127.0.0.1:3100", "example.com")).toThrow("Private, reserved, or metadata IP targets are not allowed");
+    expect(() => assertTargetInScope("http://169.254.169.254/latest/meta-data", "example.com")).toThrow("Private, reserved, or metadata IP targets are not allowed");
     expect(() => parseScopeDomain("com")).toThrow("bare TLD");
-    expect(() => assertTargetInScope("https://service.internal", "service.internal")).toThrow("Internal-network");
-    expect(() => assertTargetInScope("http://0177.0.0.1", "example.com")).toThrow("Loopback");
+    expect(() => assertTargetInScope("https://service.internal", "service.internal")).toThrow("Loopback and internal hostnames");
+    expect(() => assertTargetInScope("http://0177.0.0.1", "example.com")).toThrow("Private, reserved, or metadata IP targets are not allowed");
     expect(assertTargetInScope("https://10.example.com", "example.com").hostname).toBe("10.example.com");
   });
   it("forces passive read-only contracts without repository or PR authority", () => {

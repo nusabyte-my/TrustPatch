@@ -7,6 +7,7 @@ import { storeEvidence } from "./evidence";
 import { addEvent } from "./store";
 import { analyzeSeoPage, inspectSearchPolicy } from "./seo";
 import { observeReactivePage, storeReactiveDiagnostics } from "./recon";
+import { assertResolvablePublicTarget } from "./target-safety";
 
 export async function inspectSite(store: TrustpatchDb, runId: string, contract: RunContract): Promise<Finding[]> {
   const findings: Finding[] = [];
@@ -17,6 +18,13 @@ export async function inspectSite(store: TrustpatchDb, runId: string, contract: 
   const policy = await inspectSearchPolicy(store, runId, contract);
   try {
     const page = await browser.newPage();
+    await page.route("**/*", async (route) => {
+      try {
+        const requestUrl = new URL(route.request().url());
+        if (["data:", "blob:", "about:", "chrome-extension:"].includes(requestUrl.protocol)) { await route.continue(); return; }
+        await assertResolvablePublicTarget(requestUrl.toString(), contract.authorizedLocalFixture); await route.continue();
+      } catch { await route.abort("blockedbyclient"); }
+    });
     for (const path of paths) {
       const url = new URL(path, contract.targetUrl).toString();
       const finishRecon = observeReactivePage(page, url);
@@ -28,7 +36,8 @@ export async function inspectSite(store: TrustpatchDb, runId: string, contract: 
       const raw = await (await page.request.get(url)).text();
       const rendered = await page.content();
       const screenshot = storeEvidence(store, runId, `screenshot-${path.replaceAll("/", "_") || "home"}`, await page.screenshot({ fullPage: true }));
-      await storeReactiveDiagnostics(store, runId, await finishRecon());
+      try { await storeReactiveDiagnostics(store, runId, await finishRecon()); }
+      catch (error) { addEvent(store, runId, "recon", "activity", `Reactive diagnostics unavailable: ${error instanceof Error ? error.message : "unknown error"}. Page inspection and stored evidence continue.`, { activity: "recon", status: "warning", evidenceCaptured: false }); }
       const rawEvidence = storeEvidence(store, runId, `raw-${path.replaceAll("/", "_") || "home"}`, raw);
       const renderedEvidence = storeEvidence(store, runId, `rendered-${path.replaceAll("/", "_") || "home"}`, rendered);
       const headerEvidence = storeEvidence(store, runId, `headers-${path.replaceAll("/", "_") || "home"}`, { url, status, headers });

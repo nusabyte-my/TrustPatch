@@ -12,4 +12,5 @@ export * from "./seo";
 export * from "./bulk";
 export * from "./bulk-store";
 export * from "./target-console";
+export * from "./target-safety";
 export * from "./github";

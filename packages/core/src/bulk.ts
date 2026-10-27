@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { runContractSchema, type RunContract } from "@trustpatch/contracts";
+import { assertPublicTarget } from "./target-safety";
 
 export const bulkTargetSchema = z.object({
   url: z.string().url(),
@@ -33,8 +34,7 @@ export function parseScopeDomain(value: string): string {
 }
 
 export function assertTargetInScope(target: string, scopeDomain: string): URL {
-  const url = new URL(target);
-  if (!["https:", "http:"].includes(url.protocol)) throw new Error("Only HTTP(S) targets are supported");
+  const url = assertPublicTarget(target);
   const host = url.hostname.toLowerCase().replace(/^\[|\]$/g, "").replace(/\.$/, "");
   if (host === "localhost" || host === "127.0.0.1" || host === "0.0.0.0" || host === "::1" || host === "2130706433" || host === "0177.0.0.1") throw new Error("Loopback targets must use the local fixture flow");
   if (/(?:^|\.)(?:local|internal|lan|intranet|corp)$/i.test(host)) throw new Error("Internal-network hostnames are not allowed in bulk mode");

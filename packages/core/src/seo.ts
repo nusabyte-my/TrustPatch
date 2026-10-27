@@ -4,6 +4,7 @@ import type { Finding, RunContract } from "@trustpatch/contracts";
 import type { TrustpatchDb } from "./db";
 import { storeEvidence } from "./evidence";
 import { addEvent } from "./store";
+import { fetchPublic } from "./target-safety";
 
 export interface SeoPageInput {
   runId: string;
@@ -95,8 +96,8 @@ export async function inspectSearchPolicy(store: TrustpatchDb, runId: string, co
   let sitemapResponse: Response;
   try {
     [robotsResponse, sitemapResponse] = await Promise.all([
-      fetch(`${origin}/robots.txt`, { signal: AbortSignal.timeout(15_000) }),
-      fetch(`${origin}/sitemap.xml`, { signal: AbortSignal.timeout(15_000) })
+      fetchPublic(`${origin}/robots.txt`, contract.authorizedLocalFixture),
+      fetchPublic(`${origin}/sitemap.xml`, contract.authorizedLocalFixture)
     ]);
   } catch (error) {
     const detail = error instanceof Error ? error.message : "unknown network error";

@@ -1,6 +1,6 @@
 import { store } from "./runtime";
 import {
-  createRun, getContract, getEvents, getRunView, grantApproval, publishDraftPr, setStatus, trustpatchPaths, updateContract, addEvent
+  createRun, getContract, getEvents, getRunView, grantApproval, publishDraftPr, setStatus, trustpatchPaths, updateContract, addEvent, assertResolvablePublicTarget
 } from "@trustpatch/core";
 import { planTargetInstruction } from "@trustpatch/core";
 import { createRunSchema, inferScope, runContractSchema, type CreateRunInput } from "@trustpatch/contracts";
@@ -25,15 +25,18 @@ export async function createAndExecuteRun(input: CreateRunInput) {
     }
   });
   contract.readOnly = targetPlan.readOnly;
-  if (!parsed.repositoryPath && !parsed.targetUrl) {
+  if (!parsed.repositoryPath) {
     const local = new URL(contract.targetUrl);
     if (!["127.0.0.1", "localhost"].includes(local.hostname)) {
       contract.authorizedLocalFixture = false;
     } else {
       contract.authorizedLocalFixture = true;
+      if (contract.repositoryPath.startsWith("audit://")) contract.repositoryPath = trustpatchPaths().fixturePath;
     }
   }
   if (!contract.authorizedLocalFixture && targetPlan.repairRequested) throw new Error("Code repair is limited to the authorized local fixture; remote targets require read-only analysis");
+  await assertResolvablePublicTarget(contract.targetUrl, contract.authorizedLocalFixture);
+  await assertResolvablePublicTarget(contract.productionOrigin, contract.authorizedLocalFixture);
   if (contract.authorizedLocalFixture && !existsSync(contract.repositoryPath)) throw new Error(`Authorized repository not found: ${contract.repositoryPath}`);
   const id = createRun(store, contract);
   return getRunView(store, id);

@@ -29,16 +29,19 @@ export function observeReactivePage(page: Page, url: string) {
   page.on("requestfailed", onRequestFailed);
   page.on("response", onResponse);
   return async (): Promise<ReactiveDiagnostics> => {
-    page.off("console", onConsole);
-    page.off("pageerror", onPageError);
-    page.off("requestfailed", onRequestFailed);
-    page.off("response", onResponse);
-    return {
-    url, finalUrl: page.url(), console: consoleMessages, pageErrors, failedRequests, errorResponses,
-    scripts: await page.locator("script[src]").evaluateAll((nodes) => nodes.map((node) => (node as HTMLScriptElement).src).filter(Boolean)),
-    stylesheets: await page.locator("link[rel='stylesheet']").evaluateAll((nodes) => nodes.map((node) => (node as HTMLLinkElement).href).filter(Boolean)),
-    limits: ["Observed only this navigation and idle window; not a complete runtime or security assessment.", "Failed requests and console messages may include third-party resources.", "No credentials, hidden storage values, or request/response bodies collected."]
-  };
+    try {
+      return {
+        url, finalUrl: page.url(), console: consoleMessages, pageErrors, failedRequests, errorResponses,
+        scripts: await page.locator("script[src]").evaluateAll((nodes) => nodes.map((node) => (node as HTMLScriptElement).src).filter(Boolean)),
+        stylesheets: await page.locator("link[rel='stylesheet']").evaluateAll((nodes) => nodes.map((node) => (node as HTMLLinkElement).href).filter(Boolean)),
+        limits: ["Observed only this navigation and idle window; not a complete runtime or security assessment.", "Failed requests and console messages may include third-party resources.", "No credentials, hidden storage values, or request/response bodies collected."]
+      };
+    } finally {
+      page.off("console", onConsole);
+      page.off("pageerror", onPageError);
+      page.off("requestfailed", onRequestFailed);
+      page.off("response", onResponse);
+    }
   };
 }
 
@@ -89,9 +92,13 @@ export async function enrichWithRea(store: TrustpatchDb, runId: string, targetUr
   }
 }
 function findTarget(value: unknown, url: string): string | null {
-  const text = JSON.stringify(value);
   const origin = new URL(url).origin;
-  const entries = text.matchAll(/"target_id"\s*:\s*"([^"]+)"/g);
-  for (const entry of entries) { const nearby = text.slice(Math.max(0, entry.index! - 1000), entry.index! + 1000); if (nearby.includes(origin)) return entry[1] ?? null; }
+  if (!value || typeof value !== "object") return null;
+  if (Array.isArray(value)) { for (const item of value) { const match = findTarget(item, url); if (match) return match; } return null; }
+  const record = value as Record<string, unknown>;
+  const id = typeof record.target_id === "string" ? record.target_id : typeof record.targetId === "string" ? record.targetId : null;
+  const candidateUrl = typeof record.url === "string" ? record.url : null;
+  if (id && candidateUrl) { try { if (new URL(candidateUrl).origin === origin) return id; } catch { return null; } }
+  for (const child of Object.values(record)) { const match = findTarget(child, url); if (match) return match; }
   return null;
 }

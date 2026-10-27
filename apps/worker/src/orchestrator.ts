@@ -1,7 +1,7 @@
 import { resolve } from "node:path";
 
 import {
-  addEvent, applyRepairPlan, createDatabase, getContract, getFindings, getRunView,
+  addEvent, applyRepairPlan, createDatabase, getContract, getEvents, getFindings, getRunView,
   inspectSite, enrichWithRea, mapRepository, migrateDatabase, planRepairs, plannerName, requestApproval,
   saveFindings, saveProof, setStatus, startPatchedPreview, updateFindingStates, verifyRepair,
   ProviderError, type TrustpatchDb
@@ -27,7 +27,8 @@ export async function executeRun(store: TrustpatchDb, runId: string): Promise<Ru
         inspectSite(store, runId, contract).then(async (result) => { await enrichWithRea(store, runId, contract.targetUrl); return result; }),
         Promise.resolve().then(() => contract.authorizedLocalFixture ? mapRepository(store, runId, contract) : { files: {}, evidenceId: null })
       ]);
-      addEvent(store, runId, "recon", "activity", "Recon stage complete. Reactive diagnostics are stored with this run.", { activity: "recon", status: "success" });
+      const reactiveCaptured = getEvents(store, runId).some((event) => event.role === "recon" && event.data.activity === "recon" && typeof event.data.evidenceId === "string");
+      addEvent(store, runId, "recon", "activity", reactiveCaptured ? "Recon stage complete. Reactive diagnostics are stored with this run." : "Recon stage complete without reactive evidence. Page inspection results are preserved.", { activity: "recon", status: reactiveCaptured ? "success" : "warning", evidenceCaptured: reactiveCaptured });
       const seenPolicyDefects = new Set<string>();
       const findings = observations.filter((finding) => {
         if (finding.kind !== "security_header") return true;
