@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const AGENT_NAME = "Mend";
-export const agentRoleSchema = z.enum(["mend", "inspector", "mapper", "repair", "verifier", "seo"]);
+export const agentRoleSchema = z.enum(["mend", "inspector", "mapper", "repair", "verifier", "seo", "recon"]);
 export type AgentRole = z.infer<typeof agentRoleSchema>;
 export const runStatusSchema = z.enum([
   "queued", "investigating", "awaiting_approval", "repairing", "verifying",

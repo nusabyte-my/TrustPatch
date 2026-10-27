@@ -2,7 +2,7 @@ import { resolve } from "node:path";
 
 import {
   addEvent, applyRepairPlan, createDatabase, getContract, getFindings, getRunView,
-  inspectSite, mapRepository, migrateDatabase, planRepairs, plannerName, requestApproval,
+  inspectSite, enrichWithRea, mapRepository, migrateDatabase, planRepairs, plannerName, requestApproval,
   saveFindings, saveProof, setStatus, startPatchedPreview, updateFindingStates, verifyRepair,
   ProviderError, type TrustpatchDb
 } from "@trustpatch/core";
@@ -24,9 +24,10 @@ export async function executeRun(store: TrustpatchDb, runId: string): Promise<Ru
       addEvent(store, runId, "mend", "activity", `Target accepted: ${contract.targetUrl}. Tool plan is executing; no code has been changed.`, { activity: "inspection", status: "active", targetUrl: contract.targetUrl });
       addEvent(store, runId, "mend", "activity", contract.authorizedLocalFixture ? "Inspector and Mapper are working in parallel. I’m collecting raw pages, rendered metadata, response headers, and source context." : "Inspector and SEO are collecting page evidence, response policy, and search/AI-search readiness.", { activity: "inspection", status: "active" });
       const [observations, mapped] = await Promise.all([
-        inspectSite(store, runId, contract),
+        inspectSite(store, runId, contract).then(async (result) => { await enrichWithRea(store, runId, contract.targetUrl); return result; }),
         Promise.resolve().then(() => contract.authorizedLocalFixture ? mapRepository(store, runId, contract) : { files: {}, evidenceId: null })
       ]);
+      addEvent(store, runId, "recon", "activity", "Recon stage complete. Reactive diagnostics are stored with this run.", { activity: "recon", status: "success" });
       const seenPolicyDefects = new Set<string>();
       const findings = observations.filter((finding) => {
         if (finding.kind !== "security_header") return true;
@@ -160,5 +161,5 @@ export async function startWorker() {
   const shutdown = () => { clearInterval(timer); store.sqlite.close(); process.exit(0); };
   process.on("SIGINT", shutdown);
   process.on("SIGTERM", shutdown);
-  console.log("Mend worker ready. Supervising Inspector, Mapper, Repair, and Verifier.");
+  console.log("Mend worker ready. Supervising Inspector, Mapper, Recon, SEO, Repair, and Verifier.");
 }

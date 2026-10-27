@@ -3,6 +3,7 @@ export * from "./db";
 export * from "./evidence";
 export * from "./store";
 export * from "./inspector";
+export * from "./recon";
 export * from "./mapper";
 export * from "./model";
 export * from "./repair";

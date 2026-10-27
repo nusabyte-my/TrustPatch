@@ -5,7 +5,7 @@ import type { ToolName } from "@trustpatch/core";
 
 interface Plan { targetUrl: string; scopeDomain: string | null; tools: ToolName[]; readOnly: boolean; repairRequested: boolean; warnings: string[] }
 const toolLabels: Record<ToolName, string> = {
-  "site.inspect": "Inspect target", "site.crawl": "Crawl pages", "site.headers": "Capture headers", "site.screenshot": "Capture screenshot",
+  "site.inspect": "Inspect target", "site.crawl": "Crawl pages", "site.headers": "Capture headers", "site.screenshot": "Capture screenshot", "recon.reactive": "Reactive browser diagnostics",
   "seo.analyze": "Analyze SEO + AI search", "seo.crawl_policy": "Check crawler policy", "repo.map": "Map repository", "repair.propose": "Propose repair", "repair.verify": "Verify result"
 };
 

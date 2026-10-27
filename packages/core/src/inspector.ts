@@ -6,17 +6,20 @@ import type { TrustpatchDb } from "./db";
 import { storeEvidence } from "./evidence";
 import { addEvent } from "./store";
 import { analyzeSeoPage, inspectSearchPolicy } from "./seo";
+import { observeReactivePage, storeReactiveDiagnostics } from "./recon";
 
 export async function inspectSite(store: TrustpatchDb, runId: string, contract: RunContract): Promise<Finding[]> {
   const findings: Finding[] = [];
   const enabled = (kind: Finding["kind"]) => contract.scope.includeChecks.includes(kind) && !contract.scope.excludeChecks.includes(kind);
   const paths = contract.scope.includePaths.filter((path) => !contract.scope.excludePaths.some((excluded) => path === excluded || path.startsWith(`${excluded}/`))).slice(0, contract.maxPages);
   const browser = await chromium.launch({ headless: true });
+  addEvent(store, runId, "recon", "activity", `Reactive inspection starting on ${contract.targetUrl}. Watching console, failed requests, and loaded client resources.`, { activity: "recon", status: "active" });
   const policy = await inspectSearchPolicy(store, runId, contract);
   try {
     const page = await browser.newPage();
     for (const path of paths) {
       const url = new URL(path, contract.targetUrl).toString();
+      const finishRecon = observeReactivePage(page, url);
       addEvent(store, runId, "inspector", "activity", `Inspecting ${path}: checking response, indexing directives, canonical target, and security headers.`, { activity: "inspection", status: "active", url });
       const response = await page.goto(url, { waitUntil: "networkidle", timeout: 30_000 });
       if (!response) throw new Error(`No response from ${url}`);
@@ -25,6 +28,7 @@ export async function inspectSite(store: TrustpatchDb, runId: string, contract: 
       const raw = await (await page.request.get(url)).text();
       const rendered = await page.content();
       const screenshot = storeEvidence(store, runId, `screenshot-${path.replaceAll("/", "_") || "home"}`, await page.screenshot({ fullPage: true }));
+      await storeReactiveDiagnostics(store, runId, await finishRecon());
       const rawEvidence = storeEvidence(store, runId, `raw-${path.replaceAll("/", "_") || "home"}`, raw);
       const renderedEvidence = storeEvidence(store, runId, `rendered-${path.replaceAll("/", "_") || "home"}`, rendered);
       const headerEvidence = storeEvidence(store, runId, `headers-${path.replaceAll("/", "_") || "home"}`, { url, status, headers });
