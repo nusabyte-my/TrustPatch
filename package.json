@@ -1,0 +1,30 @@
+{
+  "name": "trustpatch",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "dev": "concurrently -n web,worker,fixture -c blue,green,yellow \"pnpm dev:web\" \"pnpm dev:worker\" \"pnpm dev:fixture\"",
+    "dev:web": "pnpm --filter @trustpatch/web dev",
+    "dev:worker": "pnpm --filter @trustpatch/worker dev",
+    "dev:fixture": "pnpm --filter @trustpatch/fixture dev",
+    "build": "pnpm --filter @trustpatch/contracts build && pnpm --filter @trustpatch/core build && pnpm --filter @trustpatch/fixture build && pnpm --filter @trustpatch/web build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm --filter @trustpatch/core test && pnpm --filter @trustpatch/worker test",
+    "test:e2e": "pnpm --filter @trustpatch/worker test:e2e",
+    "test:adversarial": "pnpm --filter @trustpatch/worker test:adversarial",
+    "db:migrate": "pnpm --filter @trustpatch/core migrate",
+    "fixture:reset": "git -C fixtures/broken-next-site restore . && git -C fixtures/broken-next-site clean -fd",
+    "demo:reset": "node scripts/reset-demo.mjs"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["better-sqlite3", "esbuild"]
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "concurrently": "^9.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.9.0"
+  }
+}

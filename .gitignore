@@ -1,0 +1,14 @@
+node_modules/
+.next/
+dist/
+.env
+.env.*
+!.env.example
+.data/
+artifacts/
+logs/
+.trustpatch-worktrees/
+playwright-report/
+test-results/
+*.tsbuildinfo
+.DS_Store

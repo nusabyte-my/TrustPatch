@@ -1,0 +1,28 @@
+{
+  "name": "@trustpatch/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts", "./db": "./src/db.ts", "./migrations/*": "./migrations/*" },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "migrate": "tsx src/migrate.ts"
+  },
+  "dependencies": {
+    "@trustpatch/contracts": "workspace:*",
+    "better-sqlite3": "^12.0.0",
+    "cheerio": "^1.0.0",
+    "drizzle-orm": "^0.45.0",
+    "playwright": "^1.56.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.0",
+    "@types/node": "^22.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.9.0",
+    "vitest": "^3.0.0"
+  }
+}

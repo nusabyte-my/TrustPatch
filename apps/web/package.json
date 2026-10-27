@@ -1,0 +1,23 @@
+{
+  "name": "@trustpatch/web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": { "dev": "next dev -p 3000", "build": "next build", "typecheck": "tsc --noEmit" },
+  "dependencies": {
+    "@trustpatch/contracts": "workspace:*",
+    "@trustpatch/core": "workspace:*",
+    "dotenv": "^17.0.0",
+    "@fontsource/space-grotesk": "^5.0.0",
+    "@fontsource/source-sans-3": "^5.0.0",
+    "@fontsource/ibm-plex-mono": "^5.0.0",
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest"
+  },
+  "devDependencies": {
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.9.0"
+  }
+}
