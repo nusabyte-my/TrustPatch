@@ -18,7 +18,6 @@ const statusLabels: Record<string, string> = {
 
 export function Workbench() {
   const [objective, setObjective] = useState(starter);
-  const [consoleObjective, setConsoleObjective] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [run, setRun] = useState<RunView | null>(null);
   const [events, setEvents] = useState<RunEvent[]>([]);
@@ -36,13 +35,6 @@ export function Workbench() {
     setEvents(data.events);
   }, []);
   useEffect(() => {
-    if (consoleObjective) {
-      setObjective(consoleObjective);
-      setConsoleObjective(null);
-      document.getElementById("objective")?.focus();
-    }
-  }, [consoleObjective]);
-  useEffect(() => {
     const id = new URLSearchParams(window.location.search).get("run");
     if (!id || id === loadedRunId) return;
     setLoadedRunId(id);
@@ -59,8 +51,7 @@ export function Workbench() {
     void fetch(`/api/evidence/${id}`).then((response) => response.text()).then(setDiff).catch(() => setDiff("Could not load diff"));
   }, [run?.proof?.diffEvidenceId]);
 
-  async function submit(event: FormEvent) {
-    event.preventDefault();
+  async function startRun() {
     setBusy(true); setError("");
     try {
       const response = await fetch("/api/runs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ objective }) });
@@ -69,6 +60,10 @@ export function Workbench() {
       setRun(data.run); await refresh(data.run.id);
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Run failed"); }
     finally { setBusy(false); }
+  }
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    await startRun();
   }
   async function approve() {
     if (!run?.approval) return;
@@ -106,7 +101,7 @@ export function Workbench() {
   return <>
     <header className="topbar"><a className="brand" href="/" aria-label="TrustPatch home"><TrustPatchMark /><span>TrustPatch</span></a><div className="environment"><span className="signal" /> Local verified fixture <span className="divider">/</span> Mend + 4 specialists</div></header>
     <main id="main" className="workbench">
-      <TargetConsole onExecute={setConsoleObjective} />
+      <TargetConsole onExecute={startRun} />
       <UsageGuide />
       <section className="intro"><div><p className="kicker">Repair workbench</p><h1>From finding<br />to proof.</h1></div><p>Tell Mend what to repair. Inspector and Mapper investigate in parallel. You approve the scope. Verifier proves the result.</p></section>
       <section className="command" aria-labelledby="objective-label"><div className="presets" aria-label="Instruction presets"><button onClick={() => preset("Investigate the staging site only. Explain confirmed findings; do not patch.")}>Investigate only</button><button onClick={() => preset(starter)}>Repair selected findings</button><button onClick={() => preset(`${starter} Do not open a pull request.`)}>Stop before pull request</button></div><form onSubmit={submit}><label id="objective-label" htmlFor="objective">What should Mend accomplish?</label><textarea id="objective" value={objective} onChange={(event) => setObjective(event.target.value)} rows={3} required /><div className="command-bottom"><span>Read-only investigation starts immediately. Mutations need your approval.</span><button className="primary" disabled={busy || objective.trim().length < 3}>{busy ? "Working…" : run ? "Start new run" : "Inspect and plan repair"}<span aria-hidden="true">↗</span></button></div></form></section>

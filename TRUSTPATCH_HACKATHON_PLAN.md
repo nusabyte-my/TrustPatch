@@ -27,6 +27,7 @@ Verified in the actual application:
 - Final run `run_3c23166b-03d8-48aa-b028-6eb2e64b7d93` reached `validated` with all three checks passing: indexing directive, canonical target, and MIME-sniffing protection.
 - The actual UI completed the same flow on port 7258, with `Validated locally` and three passing checks.
 - Browser check at 1440px and emulated 375px reported no horizontal document overflow.
+- Autonomous Target Console verified in the browser: **Run agent** starts 6 typed tools and the full inspection/approval/repair/verification workflow without a second execute action; final Proof Receipt passes all 3 checks.
 - Live Mend activity stream verified in the browser: queued run, per-URL inspections, vulnerability alerts, approval scope, first failed verification, second repair, and final validation.
 - Expanded SEO/AEO/GEO agent evaluates metadata, social previews, semantic structure, JSON-LD, content depth, internal links, answer extractability, robots, and sitemaps without ranking guarantees.
 - Scoped bulk authorized-site audit added with domain/TLD validation, passive-only contracts, and per-site progress. `DEPLOYMENT.md` documents local and single-VM deployment.

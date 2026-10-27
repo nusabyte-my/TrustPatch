@@ -2,18 +2,20 @@ import { store } from "./runtime";
 import {
   createRun, getContract, getEvents, getRunView, grantApproval, publishDraftPr, setStatus, trustpatchPaths, updateContract, addEvent
 } from "@trustpatch/core";
+import { planTargetInstruction } from "@trustpatch/core";
 import { createRunSchema, inferScope, runContractSchema, type CreateRunInput } from "@trustpatch/contracts";
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 
 export async function createAndExecuteRun(input: CreateRunInput) {
   const parsed = createRunSchema.parse(input);
+  const targetPlan = planTargetInstruction({ instruction: parsed.objective, authorized: true });
   const inferred = inferScope(parsed.objective, parsed.scope);
   const contract = runContractSchema.parse({
     objective: parsed.objective,
-    targetUrl: parsed.targetUrl ?? process.env.TRUSTPATCH_FIXTURE_URL ?? "http://127.0.0.1:3100",
-    productionOrigin: parsed.productionOrigin ?? "https://northstar.example",
-    repositoryPath: parsed.repositoryPath ? resolve(parsed.repositoryPath) : trustpatchPaths().fixturePath,
+    targetUrl: parsed.targetUrl ?? targetPlan.targetUrl,
+    productionOrigin: parsed.productionOrigin ?? new URL(targetPlan.targetUrl).origin,
+    repositoryPath: parsed.repositoryPath ? resolve(parsed.repositoryPath) : targetPlan.repairRequested ? trustpatchPaths().fixturePath : `audit://${new URL(targetPlan.targetUrl).hostname}`,
     baseBranch: "main",
     createPr: parsed.createPr ?? !/stop before.*pr|don.?t open.*pr/i.test(parsed.objective),
     scope: {
@@ -22,14 +24,17 @@ export async function createAndExecuteRun(input: CreateRunInput) {
       ...inferred
     }
   });
-  contract.readOnly = /investigate.*only|explain.*only|do not patch|don.?t patch/i.test(parsed.objective);
+  contract.readOnly = targetPlan.readOnly;
   if (!parsed.repositoryPath && !parsed.targetUrl) {
     const local = new URL(contract.targetUrl);
-    if (!["127.0.0.1", "localhost"].includes(local.hostname)) throw new Error("Only the explicitly authorized local fixture is enabled in this build");
-    contract.authorizedLocalFixture = true;
+    if (!["127.0.0.1", "localhost"].includes(local.hostname)) {
+      contract.authorizedLocalFixture = false;
+    } else {
+      contract.authorizedLocalFixture = true;
+    }
   }
-  if (!contract.authorizedLocalFixture) throw new Error("Target ownership must be verified before inspection");
-  if (!existsSync(contract.repositoryPath)) throw new Error(`Authorized repository not found: ${contract.repositoryPath}`);
+  if (!contract.authorizedLocalFixture && targetPlan.repairRequested) throw new Error("Code repair is limited to the authorized local fixture; remote targets require read-only analysis");
+  if (contract.authorizedLocalFixture && !existsSync(contract.repositoryPath)) throw new Error(`Authorized repository not found: ${contract.repositoryPath}`);
   const id = createRun(store, contract);
   return getRunView(store, id);
 }

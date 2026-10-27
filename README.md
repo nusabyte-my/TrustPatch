@@ -6,7 +6,7 @@ Local hackathon implementation for the Meta Global AI Developer Hackathon, Start
 
 ## Implemented surface
 
-- Hermes-style Target Console: enter target + objective + constraints, preview typed tools, then execute in the real repair workflow.
+- Autonomous Target Console: enter target + objective + constraints, then **Run agent** starts the complete typed-tool workflow without a second execute button.
 - Chat-driven run creation and read-only investigation mode.
 - Mend coordinator with Inspector, Mapper, Repair, and Verifier roles.
 - Raw HTML, rendered DOM, headers, screenshots, source context, diffs, and verification artifacts persisted with SHA-256 metadata.
@@ -38,6 +38,14 @@ pnpm dev
 Open `http://localhost:7258`; the fixture runs at `http://localhost:3100`. Patched verification previews use separately allocated ports. See `USING_TRUSTPATCH.md` for the user workflow and `DEPLOYMENT.md` for production build, single-VM process, reverse-proxy, backup, and bulk-audit authorization instructions.
 
 The default `AGENT_MODE=fixture` is deliberately deterministic and labeled in the UI. It is not represented as Meta-model output. The Meta Responses API integration is **implemented but not exercised end-to-end** because no API credential is available in this environment. To enable it for verification, set `AGENT_MODE=meta`, `MODEL_API_KEY`, and optionally `MODEL_ID` / `MODEL_API_URL` in the root `.env`.
+
+## Next quick wins
+
+1. Exercise the real Meta Responses API repair with `AGENT_MODE=meta` and `MODEL_API_KEY`; keep fixture results labeled separately.
+2. Publish the repository publicly and record the single-click target-to-proof demo.
+3. Add per-page screenshot thumbnails beside findings without duplicating the activity stream.
+4. Add a downloadable Proof Receipt JSON export from the existing run/evidence API.
+5. Package the full single-click browser workflow as a repeatable test with configurable timeouts.
 
 ## Verification
 

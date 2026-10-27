@@ -21,10 +21,11 @@ export async function executeRun(store: TrustpatchDb, runId: string): Promise<Ru
   try {
     if (initial.status === "queued") {
       setStatus(store, runId, "investigating");
-      addEvent(store, runId, "mend", "activity", "Inspector and Mapper are working in parallel. I’m collecting raw pages, rendered metadata, response headers, and source context.", { activity: "inspection", status: "active" });
+      addEvent(store, runId, "mend", "activity", `Target accepted: ${contract.targetUrl}. Tool plan is executing; no code has been changed.`, { activity: "inspection", status: "active", targetUrl: contract.targetUrl });
+      addEvent(store, runId, "mend", "activity", contract.authorizedLocalFixture ? "Inspector and Mapper are working in parallel. I’m collecting raw pages, rendered metadata, response headers, and source context." : "Inspector and SEO are collecting page evidence, response policy, and search/AI-search readiness.", { activity: "inspection", status: "active" });
       const [observations, mapped] = await Promise.all([
         inspectSite(store, runId, contract),
-        Promise.resolve().then(() => mapRepository(store, runId, contract))
+        Promise.resolve().then(() => contract.authorizedLocalFixture ? mapRepository(store, runId, contract) : { files: {}, evidenceId: null })
       ]);
       const seenPolicyDefects = new Set<string>();
       const findings = observations.filter((finding) => {

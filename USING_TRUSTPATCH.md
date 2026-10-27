@@ -8,7 +8,7 @@ Use **Target Console** for a Hermes-style instruction:
 
 > Inspect http://127.0.0.1:3100. Check indexing, security headers, SEO and JSON-LD. Read-only.
 
-Confirm authorization and select **Plan agent tools**. The console shows the typed tools selected for the target, then **Execute plan in workbench** passes the objective into the actual Inspector/SEO/Repair/Verifier workflow. It is a typed planner, not an unrestricted shell or autonomous deployment agent.
+Confirm authorization and select **Run agent**. The console displays the typed tools while the actual Inspector/SEO/Repair/Verifier workflow starts immediately. Watch findings, repair approval, verification, and the Proof Receipt in one continuous run. No second execute step or unrestricted shell/deployment agent is used.
 
 For external domains, provide the approved scope and an ownership manifest/DNS verification for production use. Remote targets remain read-only; code repair is limited to the authorized local fixture.
 
