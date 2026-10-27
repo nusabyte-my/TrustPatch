@@ -11,7 +11,7 @@ export function addEvent(store: TrustpatchDb, runId: string, role: AgentRole, ty
 export function createRun(store: TrustpatchDb, contract: RunContract) {
   const id = `run_${randomUUID()}`;
   store.db.insert(store.runs).values({ id, status: "queued", contractJson: JSON.stringify(contract), createdAt: now(), updatedAt: now() }).run();
-  addEvent(store, id, "mend", "run.created", "Objective accepted. Mend is preparing the investigation.", { objective: contract.objective });
+  addEvent(store, id, "mend", "activity", "Objective accepted. I’m checking the authorized site and repository before proposing any changes.", { activity: "inspection", status: "active", objective: contract.objective });
   return id;
 }
 export function getContract(store: TrustpatchDb, runId: string): RunContract {
@@ -52,7 +52,7 @@ export function requestApproval(store: TrustpatchDb, runId: string, scope: Scope
   const approval: Approval = { ...base, scopeDigest: approvalDigest(base) };
   store.db.update(store.runs).set({ approvalJson: JSON.stringify(approval), approvalDigest: approval.scopeDigest, approvalGranted: 0, updatedAt: now() }).where(eq(store.runs.id, runId)).run();
   setStatus(store, runId, "awaiting_approval");
-  addEvent(store, runId, "mend", "approval.required", "Review the exact repair scope before Mend changes the isolated branch.", approval as unknown as Record<string, unknown>);
+  addEvent(store, runId, "mend", "activity", `I found ${found.length} issue${found.length === 1 ? "" : "s"}. Review the exact files and permissions before I create a repair branch.`, { activity: "approval", status: "warning", ...approval } as unknown as Record<string, unknown>);
 }
 export function grantApproval(store: TrustpatchDb, runId: string, scopeDigest: string) {
   const row = store.db.select().from(store.runs).where(eq(store.runs.id, runId)).get();
@@ -61,7 +61,7 @@ export function grantApproval(store: TrustpatchDb, runId: string, scopeDigest: s
   const result = store.db.update(store.runs).set({ approvalGranted: 1, status: "repairing", updatedAt: now() }).where(and(eq(store.runs.id, runId), eq(store.runs.status, "awaiting_approval"), eq(store.runs.approvalGranted, 0))).run();
   if (!result.changes) throw new Error("Approval was already consumed");
   updateFindingStates(store, runId, "approved");
-  addEvent(store, runId, "mend", "approval.granted", "Scoped repair approved. Repair is starting in an isolated worktree.");
+  addEvent(store, runId, "mend", "activity", "Scope approved. I’m creating an isolated branch and starting the repair; your original files are unchanged.", { activity: "approval", status: "info" });
 }
 export function saveProof(store: TrustpatchDb, runId: string, proof: ProofReceipt) {
   store.db.update(store.runs).set({ proofJson: JSON.stringify(proof), updatedAt: now() }).where(eq(store.runs.id, runId)).run();

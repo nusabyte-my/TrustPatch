@@ -27,7 +27,8 @@ Verified in the actual application:
 - Final run `run_3c23166b-03d8-48aa-b028-6eb2e64b7d93` reached `validated` with all three checks passing: indexing directive, canonical target, and MIME-sniffing protection.
 - The actual UI completed the same flow on port 7258, with `Validated locally` and three passing checks.
 - Browser check at 1440px and emulated 375px reported no horizontal document overflow.
-- Regression tests: 4 passing. Workspace TypeScript checks and production builds pass for contracts, core, fixture, and web.
+- Live Mend activity stream verified in the browser: queued run, per-URL inspections, vulnerability alerts, approval scope, first failed verification, second repair, and final validation.
+- Regression tests: 5 passing. Workspace TypeScript checks and production builds pass for contracts, core, fixture, and web.
 - Evidence writes are idempotent for identical bytes; approvals are consumed atomically once; empty approvals are rejected; CRLF anchors are supported.
 
 Not yet exercised:

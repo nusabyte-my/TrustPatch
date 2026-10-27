@@ -13,7 +13,8 @@ Local hackathon implementation for the Meta Global AI Developer Hackathon, Start
 - Isolated Git worktree repair for the authorized Next.js fixture.
 - Independent patched-worktree build and preview verification.
 - Read-only, `noindex`, canonical, and `X-Content-Type-Options` workflows.
-- Run timeline, findings, approval card, diff viewer, and Proof Receipt UI.
+- Live Mend activity stream: queued inspection, per-URL checks, vulnerability alerts, approval requests, patch attempts, failed verification, and completion states.
+- Findings, approval card, diff viewer, and Proof Receipt UI.
 - Meta Responses API tool-call planner for `AGENT_MODE=meta`; labeled deterministic `fixture-planner` for offline development.
 - GitHub draft-PR publication when credentials are configured; no merge or deployment path.
 

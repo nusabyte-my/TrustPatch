@@ -47,8 +47,9 @@ describe("Mend full repair workflow", { timeout: 300_000 }, () => {
     expect(result.proof?.verification.every((check) => check.passed)).toBe(true);
     expect(result.proof?.planner).toBe("fixture-planner");
     expect(result.proof?.deployed).toBe(false);
-    expect(events.filter((event) => event.type === "repair.started")).toHaveLength(2);
-    expect(events.some((event) => event.type === "verification.failed" && event.message.includes("noindex"))).toBe(true);
+    expect(events.filter((event) => event.role === "repair" && event.data.activity === "repair")).toHaveLength(2);
+    expect(events.some((event) => event.role === "verifier" && event.data.status === "warning" && event.message.includes("noindex"))).toBe(true);
+    expect(events.some((event) => event.role === "inspector" && event.data.activity === "vulnerability")).toBe(true);
     expect(result.proof?.branch).toBeTruthy();
     expect(result.proof?.diffEvidenceId).toBeTruthy();
   });

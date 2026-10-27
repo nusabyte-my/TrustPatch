@@ -21,7 +21,7 @@ export async function executeRun(store: TrustpatchDb, runId: string): Promise<Ru
   try {
     if (initial.status === "queued") {
       setStatus(store, runId, "investigating");
-      addEvent(store, runId, "mend", "plan.created", "Mend dispatched Inspector and Mapper in parallel; Repair and Verifier remain policy-gated.");
+      addEvent(store, runId, "mend", "activity", "Inspector and Mapper are working in parallel. I’m collecting raw pages, rendered metadata, response headers, and source context.", { activity: "inspection", status: "active" });
       const [observations, mapped] = await Promise.all([
         inspectSite(store, runId, contract),
         Promise.resolve().then(() => mapRepository(store, runId, contract))
@@ -39,19 +39,19 @@ export async function executeRun(store: TrustpatchDb, runId: string): Promise<Ru
       }));
       saveFindings(store, withSources);
       proof.findings = withSources;
-      addEvent(store, runId, "inspector", "evidence.collected", `${withSources.length} evidence-backed findings collected.`, { repositoryEvidenceId: mapped.evidenceId });
+      addEvent(store, runId, "inspector", "activity", withSources.length ? `Inspection complete: ${withSources.length} confirmed issue${withSources.length === 1 ? "" : "s"} need review. No code has been changed.` : "Inspection complete: no selected defects found. No code has been changed.", { activity: "inspection", status: withSources.length ? "warning" : "success", count: withSources.length, repositoryEvidenceId: mapped.evidenceId });
       if (!withSources.length) {
         proof.status = "validated";
         saveProof(store, runId, proof);
         setStatus(store, runId, "validated");
-        addEvent(store, runId, "mend", "run.completed", "No selected defects found. No repository changes made.");
+        addEvent(store, runId, "mend", "activity", "No selected defects found. No repository changes made.", { activity: "completion", status: "success" });
         return getRunView(store, runId);
       }
       if (contract.readOnly) {
         proof.status = "validated";
         saveProof(store, runId, proof);
         setStatus(store, runId, "validated");
-        addEvent(store, runId, "mend", "investigation.completed", "Read-only investigation complete. No repair branch or repository mutation created.");
+        addEvent(store, runId, "mend", "activity", "Read-only investigation complete. No repair branch or repository mutation created.", { activity: "completion", status: "success" });
         return getRunView(store, runId);
       }
       requestApproval(store, runId, contract.scope, contract.createPr);
@@ -69,7 +69,7 @@ export async function executeRun(store: TrustpatchDb, runId: string): Promise<Ru
       let lastFailure: string | undefined;
       let validated = false;
       for (let attempt = 0; attempt < contract.maxPatchAttempts; attempt += 1) {
-        addEvent(store, runId, "repair", "repair.started", `Repair attempt ${attempt + 1}: ${plannerName()} is preparing a scoped patch.`);
+        addEvent(store, runId, "repair", "activity", `Repair attempt ${attempt + 1}: ${plannerName()} is preparing the smallest patch allowed by your approval.`, { activity: "repair", status: "active", attempt: attempt + 1, planner: plannerName() });
         const plan = repairPlanSchema.parse(await planRepairs({ contract, findings, files: mapped.files, attempt, ...(lastFailure ? { verificationFailure: lastFailure } : {}) }));
         const repaired = await applyRepairPlan(store, runId, contract, initial.approval, plan, attempt);
         branch = repaired.branch;
@@ -82,7 +82,7 @@ export async function executeRun(store: TrustpatchDb, runId: string): Promise<Ru
         saveProof(store, runId, { ...proof, status: "verifying" });
         updateFindingStates(store, runId, "repaired");
         setStatus(store, runId, "verifying");
-        addEvent(store, runId, "verifier", "verification.started", "Verifier is independently building and checking the patched worktree.");
+        addEvent(store, runId, "verifier", "activity", "The patch is staged. Verifier is building the isolated worktree and checking the actual rendered result.", { activity: "verification", status: "active", attempt: attempt + 1 });
         const preview = await startPatchedPreview(store, runId, repaired.worktree, contract.productionOrigin);
         try {
           proof.verification = await verifyRepair(store, runId, contract, findings, preview.url);
@@ -95,7 +95,7 @@ export async function executeRun(store: TrustpatchDb, runId: string): Promise<Ru
           break;
         }
         lastFailure = verification.filter((result) => !result.passed).map((result) => `${result.name}: ${result.detail}`).join("; ");
-        addEvent(store, runId, "verifier", "verification.failed", lastFailure);
+        addEvent(store, runId, "verifier", "activity", `Verification failed: ${lastFailure}. I’m reviewing the worktree and will only retry inside your approved scope.`, { activity: "verification", status: "warning", detail: lastFailure, attempt: attempt + 1 });
         store.sqlite.prepare("UPDATE runs SET attempt = ?, updated_at = ? WHERE id = ?").run(attempt + 1, new Date().toISOString(), runId);
         Object.assign(mapped, mapRepository(store, runId, contract, repaired.worktree));
       }
@@ -106,7 +106,7 @@ export async function executeRun(store: TrustpatchDb, runId: string): Promise<Ru
       };
       saveProof(store, runId, finalProof);
       setStatus(store, runId, validated ? "validated" : "blocked", validated ? null : "Repair did not pass verification within the approved attempt budget");
-      addEvent(store, runId, "mend", validated ? "run.validated" : "run.blocked", validated ? "Repair validated locally. No merge or deployment performed." : "Mend stopped without claiming a validated repair.");
+      addEvent(store, runId, "mend", "activity", validated ? "Repair validated locally. All selected checks pass. No merge or deployment performed." : "Repair stopped without passing verification. No validated result or deployment claimed.", { activity: "completion", status: validated ? "success" : "warning" });
       return getRunView(store, runId);
     }
     return initial;
@@ -116,7 +116,7 @@ export async function executeRun(store: TrustpatchDb, runId: string): Promise<Ru
     const status = provider ? "paused_provider_error" : "blocked";
     setStatus(store, runId, status, message);
     saveProof(store, runId, { ...proof, findings: getFindings(store, runId), status });
-    addEvent(store, runId, "mend", provider ? "provider.failed" : "run.blocked", message, { retryable: provider ? error.retryable : false });
+    addEvent(store, runId, "mend", "activity", provider ? `Model provider paused: ${message}. Completed evidence is preserved; resume when ready.` : `Run stopped: ${message}`, { activity: provider ? "provider" : "completion", status: "warning", retryable: provider ? error.retryable : false });
     return getRunView(store, runId);
   }
 }
@@ -131,7 +131,7 @@ export async function startWorker() {
   const store = await createRuntime();
   const active = new Set<string>();
   const timer = setInterval(async () => {
-    const pending = store.sqlite.prepare("SELECT id FROM runs WHERE status IN ('repairing', 'verifying', 'paused_provider_error')").all() as Array<{ id: string }>;
+    const pending = store.sqlite.prepare("SELECT id FROM runs WHERE status IN ('queued', 'repairing', 'verifying', 'paused_provider_error')").all() as Array<{ id: string }>;
     for (const run of pending) {
       if (active.has(run.id)) continue;
       active.add(run.id);

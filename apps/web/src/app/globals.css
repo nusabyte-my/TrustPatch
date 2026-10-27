@@ -86,6 +86,26 @@ textarea { display:block; width:100%; resize:vertical; border:1px solid var(--bo
 .timeline { margin-top:36px; }
 .timeline ol { list-style:none; padding:0; }
 .timeline li { display:grid; grid-template-columns:82px 1fr; gap:16px; padding:16px 0; border-bottom:1px solid var(--border); }
+.sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+.activity { margin-top:36px; }
+.activity-subtitle { display:block; margin-top:4px; font-size:12px; font-weight:400; color:var(--muted); }
+.activity-list { list-style:none; padding:0; margin:0; }
+.activity-item { display:grid; grid-template-columns:14px minmax(0,1fr); gap:14px; padding:18px 0; border-bottom:1px solid var(--border); }
+.activity-marker { width:9px; height:9px; margin-top:7px; border:2px solid var(--muted); border-radius:50%; }
+.activity-active .activity-marker { border-color:var(--copper); background:var(--copper-subtle); }
+.activity-warning .activity-marker { border-color:var(--warning); background:#f1e8d4; }
+.activity-success .activity-marker { border-color:var(--verified); background:var(--verified-subtle); }
+.activity-content { min-width:0; }
+.activity-content p { margin:7px 0 0; line-height:1.55; }
+.activity-meta { display:flex; align-items:center; flex-wrap:wrap; gap:8px; font-size:12px; }
+.activity-role { font-family:var(--font-mono); text-transform:uppercase; font-size:11px; color:var(--copper-dark); }
+.activity-badge { display:inline-flex; align-items:center; min-height:22px; padding:2px 7px; border-radius:3px; font-weight:600; }
+.activity-badge-active { color:var(--copper-dark); background:var(--copper-subtle); }
+.activity-badge-warning { color:var(--warning); background:#f1e8d4; }
+.activity-badge-success { color:var(--verified); background:var(--verified-subtle); }
+.activity-badge-info { color:var(--muted); background:var(--surface); }
+.activity-kind { color:var(--muted); text-transform:capitalize; }
+.activity-meta time { margin-left:auto; color:var(--muted); }
 .role { font-family:var(--font-mono); font-size:11px; text-transform:uppercase; color:var(--copper-dark); }
 .timeline p { margin:0 0 4px; }
 .timeline time { color:var(--muted); font-size:12px; }
@@ -110,5 +130,5 @@ textarea { display:block; width:100%; resize:vertical; border:1px solid var(--bo
 .muted { color:var(--muted); }
 footer { border-top:1px solid var(--border); padding:24px clamp(20px,4vw,64px); display:flex; justify-content:space-between; gap:20px; color:var(--muted); font-size:13px; }
 @media (max-width:1000px) { .run-layout { grid-template-columns:minmax(0,1fr); } .side-panel { position:static; grid-template-columns:1fr 1fr; } }
-@media (max-width:680px) { .topbar { align-items:flex-start; } .environment { font-size:12px; flex-wrap:wrap; justify-content:flex-end; } .environment .divider,.environment .divider+* { display:none; } .workbench { padding-top:36px; } .intro { grid-template-columns:1fr; gap:24px; margin-bottom:36px; } .intro>p { font-size:17px; } .command-bottom { align-items:stretch; flex-direction:column; } .primary { width:100%; } .run-heading { flex-direction:column-reverse; gap:8px; } .run-meta { flex-direction:column; gap:6px; } .side-panel { grid-template-columns:1fr; } .empty { grid-template-columns:36px 1fr; } .roles { grid-column:1/-1; } footer { flex-direction:column; } .timeline li { grid-template-columns:64px 1fr; gap:10px; } }
+@media (max-width:680px) { .topbar { align-items:flex-start; } .environment { font-size:12px; flex-wrap:wrap; justify-content:flex-end; } .environment .divider,.environment .divider+* { display:none; } .workbench { padding-top:36px; } .intro { grid-template-columns:1fr; gap:24px; margin-bottom:36px; } .intro>p { font-size:17px; } .command-bottom { align-items:stretch; flex-direction:column; } .primary { width:100%; } .run-heading { flex-direction:column-reverse; gap:8px; } .run-meta { flex-direction:column; gap:6px; } .side-panel { grid-template-columns:1fr; } .empty { grid-template-columns:36px 1fr; } .roles { grid-column:1/-1; } footer { flex-direction:column; } .timeline li { grid-template-columns:64px 1fr; gap:10px; } .activity-meta time { margin-left:0; width:100%; } }
 @media (prefers-reduced-motion:reduce) { *,*::before,*::after { transition:none!important; scroll-behavior:auto!important; } }

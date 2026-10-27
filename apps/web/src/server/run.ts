@@ -1,4 +1,3 @@
-import { executeRun } from "../../../worker/src/orchestrator";
 import { store } from "./runtime";
 import {
   createRun, getContract, getEvents, getRunView, grantApproval, publishDraftPr, setStatus, trustpatchPaths, updateContract, addEvent
@@ -32,7 +31,6 @@ export async function createAndExecuteRun(input: CreateRunInput) {
   if (!contract.authorizedLocalFixture) throw new Error("Target ownership must be verified before inspection");
   if (!existsSync(contract.repositoryPath)) throw new Error(`Authorized repository not found: ${contract.repositoryPath}`);
   const id = createRun(store, contract);
-  await executeRun(store, id);
   return getRunView(store, id);
 }
 export async function readRun(id: string) {
