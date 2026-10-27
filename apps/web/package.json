@@ -2,7 +2,7 @@
   "name": "@trustpatch/web",
   "version": "0.1.0",
   "private": true,
-  "scripts": { "dev": "next dev -p 3000", "build": "next build", "typecheck": "tsc --noEmit" },
+  "scripts": { "dev": "next dev -p 7258", "build": "next build", "typecheck": "tsc --noEmit" },
   "dependencies": {
     "@trustpatch/contracts": "workspace:*",
     "@trustpatch/core": "workspace:*",

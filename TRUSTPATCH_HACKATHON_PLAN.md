@@ -1,6 +1,6 @@
 # TrustPatch — Meta Global AI Developer Hackathon
 
-**Document status:** Canonical pre-build master plan; implementation not yet started  
+**Document status:** Canonical product plan plus local implementation evidence  
 **Brand:** TrustPatch  
 **Directive:** Build a chat-first, supervised-autonomous repair agent for verified-owned Next.js websites  
 **Build rule:** One evidence-backed repair loop before expanding scope  
@@ -10,6 +10,33 @@
 **Primary interface:** Conversational AI agent  
 **Initial platform:** Verified-owned Next.js websites and repositories  
 **Core outcome:** A tested, evidence-backed repair—not another audit report
+
+---
+
+## 0. Local Implementation Evidence — October 27, 2026
+
+The local MVP is implemented in this workspace. The workbench runs on **http://localhost:7258**; the authorized fixture runs on port 3100.
+
+Verified in the actual application:
+
+- Read-only investigation returned four observations and did not request mutation approval.
+- Repair investigation produced three findings with complete evidence and an exact file-scoped approval.
+- The user-approved worker created an isolated Git worktree and real patch.
+- Attempt 1 failed verification with `Indexing directive: noindex, nofollow`.
+- Attempt 2 repaired the inherited layout within the approved scope.
+- Final run `run_3c23166b-03d8-48aa-b028-6eb2e64b7d93` reached `validated` with all three checks passing: indexing directive, canonical target, and MIME-sniffing protection.
+- The actual UI completed the same flow on port 7258, with `Validated locally` and three passing checks.
+- Browser check at 1440px and emulated 375px reported no horizontal document overflow.
+- Regression tests: 4 passing. Workspace TypeScript checks and production builds pass for contracts, core, fixture, and web.
+- Evidence writes are idempotent for identical bytes; approvals are consumed atomically once; empty approvals are rejected; CRLF anchors are supported.
+
+Not yet exercised:
+
+- A real Meta Model API call. The Responses API adapter is implemented, but no API credential was available in the current environment. Successful runs are explicitly labeled `fixture-planner`, never represented as Meta-model results.
+- Real GitHub draft-PR creation. The direct REST integration is implemented but requires a user-supplied disposable repository and token.
+- General third-party repository support, remote ownership verification, production deployment, and arbitrary target scanning.
+
+Implementation notes are in `README.md`. The remaining `test:e2e` script is a reserved target for packaging the observed workflow into a repeatable isolated test; the successful proof above was executed through live services and the actual browser UI.
 
 ---
 

@@ -22,10 +22,17 @@ export async function executeRun(store: TrustpatchDb, runId: string): Promise<Ru
     if (initial.status === "queued") {
       setStatus(store, runId, "investigating");
       addEvent(store, runId, "mend", "plan.created", "Mend dispatched Inspector and Mapper in parallel; Repair and Verifier remain policy-gated.");
-      const [findings, mapped] = await Promise.all([
+      const [observations, mapped] = await Promise.all([
         inspectSite(store, runId, contract),
         Promise.resolve().then(() => mapRepository(store, runId, contract))
       ]);
+      const seenPolicyDefects = new Set<string>();
+      const findings = observations.filter((finding) => {
+        if (finding.kind !== "security_header") return true;
+        if (seenPolicyDefects.has(finding.kind)) return false;
+        seenPolicyDefects.add(finding.kind);
+        return true;
+      });
       const withSources = findings.map((finding) => ({
         ...finding,
         sourceFiles: finding.kind === "security_header" ? ["next.config.ts"] : finding.kind === "noindex" ? ["app/services/page.tsx", "app/layout.tsx"] : ["app/services/page.tsx"]
@@ -68,6 +75,11 @@ export async function executeRun(store: TrustpatchDb, runId: string): Promise<Ru
         branch = repaired.branch;
         changedFiles = repaired.changedFiles;
         diffEvidenceId = repaired.diffEvidenceId;
+        proof.findings = findings;
+        proof.branch = branch;
+        proof.changedFiles = changedFiles;
+        proof.diffEvidenceId = diffEvidenceId;
+        saveProof(store, runId, { ...proof, status: "verifying" });
         updateFindingStates(store, runId, "repaired");
         setStatus(store, runId, "verifying");
         addEvent(store, runId, "verifier", "verification.started", "Verifier is independently building and checking the patched worktree.");
@@ -103,7 +115,7 @@ export async function executeRun(store: TrustpatchDb, runId: string): Promise<Ru
     const provider = error instanceof ProviderError;
     const status = provider ? "paused_provider_error" : "blocked";
     setStatus(store, runId, status, message);
-    saveProof(store, runId, { ...proof, status });
+    saveProof(store, runId, { ...proof, findings: getFindings(store, runId), status });
     addEvent(store, runId, "mend", provider ? "provider.failed" : "run.blocked", message, { retryable: provider ? error.retryable : false });
     return getRunView(store, runId);
   }

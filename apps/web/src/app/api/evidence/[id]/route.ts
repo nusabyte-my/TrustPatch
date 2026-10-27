@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { readEvidence } from "@trustpatch/core";
-import { store } from "../../../../server/runtime.js";
+import { store } from "../../../../server/runtime";
 
 export async function GET(_: Request, context: { params: Promise<{ id: string }> }) {
   const item = readEvidence(store, (await context.params).id);

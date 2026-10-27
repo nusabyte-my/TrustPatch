@@ -3,7 +3,8 @@ import { drizzle } from "drizzle-orm/better-sqlite3";
 import { mkdirSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import * as schema from "./schema.js";
+import * as schema from "./schema";
+import { trustpatchPaths } from "./config";
 
 export type DrizzleDatabase = ReturnType<typeof drizzle<typeof schema>>;
 export interface TrustpatchDb {
@@ -15,8 +16,8 @@ export interface TrustpatchDb {
   findings: typeof schema.findings;
   toolCalls: typeof schema.toolCalls;
 }
-export function createDatabase(path = process.env.TRUSTPATCH_DATABASE ?? ".data/trustpatch.db"): TrustpatchDb {
-  const filename = resolve(path);
+export function createDatabase(path?: string): TrustpatchDb {
+  const filename = path ? resolve(path) : trustpatchPaths().database;
   mkdirSync(dirname(filename), { recursive: true });
   const sqlite = new Database(filename);
   sqlite.pragma("journal_mode = WAL");

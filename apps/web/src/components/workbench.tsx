@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import type { RunEvent, RunView } from "@trustpatch/contracts";
-import { TrustPatchMark } from "./logo.js";
+import { TrustPatchMark } from "./logo";
 
 const starter = "Inspect the staging site. Fix confirmed indexing and security-header defects, but do not touch /blog. Stop before opening a PR.";
 const terminal = new Set(["validated", "blocked", "cancelled"]);

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createAndExecuteRun } from "../../../server/run.js";
+import { createAndExecuteRun } from "../../../server/run";
 
 export async function POST(request: Request) {
   try {

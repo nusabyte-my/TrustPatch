@@ -23,9 +23,9 @@ export function fixtureRepairPlan(context: RepairContext): RepairPlan {
   const kinds = new Set(context.findings.map((finding) => finding.kind));
   if (kinds.has("noindex")) {
     if (context.attempt === 0 && process.env.FIXTURE_RECOVERY !== "false" && layout.includes("index: false")) {
-      edits.push({ file: "app/services/page.tsx", oldString: "  robots: { index: false, follow: false }", newString: "  robots: { index: true, follow: true }", reason: "Remove the page-level block while retaining the inherited policy for verification." });
+      edits.push({ file: "app/services/page.tsx", oldString: "  robots: { index: false, follow: false }\n", newString: "", reason: "Remove the accidental page directive while retaining the inherited block for verification." });
     } else {
-      if (services.includes("robots: { index: false, follow: false }")) edits.push({ file: "app/services/page.tsx", oldString: "  robots: { index: false, follow: false }", newString: "  robots: { index: true, follow: true }", reason: "Allow the intended public service page to be indexed." });
+      if (services.includes("robots: { index: false, follow: false }")) edits.push({ file: "app/services/page.tsx", oldString: "  robots: { index: false, follow: false }\n", newString: "", reason: "Remove the accidental page-level indexing block." });
       if (layout.includes("robots: { index: false, follow: false }")) edits.push({ file: "app/layout.tsx", oldString: "  robots: { index: false, follow: false }", newString: "  robots: { index: true, follow: true }", reason: "Remove the inherited indexing block identified by verification." });
     }
   }

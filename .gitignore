@@ -11,4 +11,9 @@ logs/
 playwright-report/
 test-results/
 *.tsbuildinfo
+/investigation.json
+/repair.json
+/approval.json
+/response.json
+
 .DS_Store

@@ -2,8 +2,8 @@ import { randomUUID } from "node:crypto";
 import { load } from "cheerio";
 import { chromium } from "playwright";
 import type { Finding, RunContract } from "@trustpatch/contracts";
-import type { TrustpatchDb } from "./db.js";
-import { storeEvidence } from "./evidence.js";
+import type { TrustpatchDb } from "./db";
+import { storeEvidence } from "./evidence";
 
 export async function inspectSite(store: TrustpatchDb, runId: string, contract: RunContract): Promise<Finding[]> {
   const findings: Finding[] = [];

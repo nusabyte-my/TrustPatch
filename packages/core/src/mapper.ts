@@ -1,8 +1,8 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import type { RunContract } from "@trustpatch/contracts";
-import type { TrustpatchDb } from "./db.js";
-import { storeEvidence } from "./evidence.js";
+import type { TrustpatchDb } from "./db";
+import { storeEvidence } from "./evidence";
 
 export function mapRepository(store: TrustpatchDb, runId: string, contract: RunContract, repositoryPath = contract.repositoryPath) {
   const files: Record<string, string> = {};

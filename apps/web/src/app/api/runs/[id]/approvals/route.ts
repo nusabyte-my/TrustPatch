@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { approveRun } from "../../../../../server/run.js";
+import { approveRun } from "../../../../../server/run";
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   try {

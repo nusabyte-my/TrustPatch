@@ -15,7 +15,7 @@
     "test:e2e": "pnpm --filter @trustpatch/worker test:e2e",
     "test:adversarial": "pnpm --filter @trustpatch/worker test:adversarial",
     "db:migrate": "pnpm --filter @trustpatch/core migrate",
-    "fixture:reset": "git -C fixtures/broken-next-site restore . && git -C fixtures/broken-next-site clean -fd",
+    "fixture:reset": "node scripts/reset-demo.mjs",
     "demo:reset": "node scripts/reset-demo.mjs"
   },
   "pnpm": {

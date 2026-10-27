@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { messageRun } from "../../../../../server/run.js";
+import { messageRun } from "../../../../../server/run";
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   try {

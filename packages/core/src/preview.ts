@@ -1,10 +1,10 @@
 import { execFile, spawn, type ChildProcess } from "node:child_process";
-import { access, symlink } from "node:fs/promises";
 import { createServer } from "node:net";
 import { resolve } from "node:path";
 import { promisify } from "node:util";
-import type { TrustpatchDb } from "./db.js";
-import { storeEvidence } from "./evidence.js";
+import type { TrustpatchDb } from "./db";
+import { trustpatchPaths } from "./config";
+import { storeEvidence } from "./evidence";
 
 const execFileAsync = promisify(execFile);
 export interface PreviewHandle { url: string; port: number; stop: () => Promise<void>; }
@@ -31,9 +31,12 @@ async function waitForPreview(url: string, child: ChildProcess, logs: string[]) 
   throw new Error(`Patched preview did not become ready. ${logs.join("")}`);
 }
 export async function startPatchedPreview(store: TrustpatchDb, runId: string, worktree: string, productionOrigin: string): Promise<PreviewHandle> {
-  const packageRoot = resolve(import.meta.dirname, "../../..");
-  try { await access(resolve(worktree, "node_modules")); }
-  catch { await symlink(resolve(packageRoot, "node_modules"), resolve(worktree, "node_modules"), "junction"); }
+  const packageRoot = trustpatchPaths().root;
+  if (process.platform === "win32") {
+    await execFileAsync(process.env.ComSpec ?? "cmd.exe", ["/d", "/s", "/c", "pnpm install --ignore-workspace --prefer-offline"], { cwd: worktree, timeout: 180_000, maxBuffer: 4 * 1024 * 1024 });
+  } else {
+    await execFileAsync("pnpm", ["install", "--ignore-workspace", "--prefer-offline"], { cwd: worktree, timeout: 180_000, maxBuffer: 4 * 1024 * 1024 });
+  }
   const localNext = resolve(worktree, "node_modules", "next", "dist", "bin", "next");
   const build = await execFileAsync(process.execPath, [localNext, "build"], {
     cwd: worktree,

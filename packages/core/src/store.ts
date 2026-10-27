@@ -1,8 +1,8 @@
 import { createHash, randomUUID } from "node:crypto";
-import { asc, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import type { AgentRole, Approval, Finding, ProofReceipt, RunContract, RunView, Scope } from "@trustpatch/contracts";
 import { runContractSchema, runViewSchema, scopeSchema } from "@trustpatch/contracts";
-import type { TrustpatchDb } from "./db.js";
+import type { TrustpatchDb } from "./db";
 
 const now = () => new Date().toISOString();
 export function addEvent(store: TrustpatchDb, runId: string, role: AgentRole, type: string, message: string, data: Record<string, unknown> = {}) {
@@ -42,6 +42,7 @@ export function approvalDigest(approval: Omit<Approval, "scopeDigest">) {
 }
 export function requestApproval(store: TrustpatchDb, runId: string, scope: Scope, createPr: boolean) {
   const found = getFindings(store, runId);
+  if (!found.length) throw new Error("No findings to approve");
   const required = new Set<string>();
   if (found.some((f) => f.kind === "noindex")) { required.add("app/services/page.tsx"); required.add("app/layout.tsx"); }
   if (found.some((f) => f.kind === "canonical")) required.add("app/services/page.tsx");
@@ -57,7 +58,7 @@ export function grantApproval(store: TrustpatchDb, runId: string, scopeDigest: s
   const row = store.db.select().from(store.runs).where(eq(store.runs.id, runId)).get();
   if (!row || row.status !== "awaiting_approval") throw new Error("Run is not awaiting approval");
   if (!row.approvalDigest || row.approvalDigest !== scopeDigest) throw new Error("Approval scope has changed; review the new scope");
-  const result = store.db.update(store.runs).set({ approvalGranted: 1, status: "repairing", updatedAt: now() }).where(eq(store.runs.id, runId)).run();
+  const result = store.db.update(store.runs).set({ approvalGranted: 1, status: "repairing", updatedAt: now() }).where(and(eq(store.runs.id, runId), eq(store.runs.status, "awaiting_approval"), eq(store.runs.approvalGranted, 0))).run();
   if (!result.changes) throw new Error("Approval was already consumed");
   updateFindingStates(store, runId, "approved");
   addEvent(store, runId, "mend", "approval.granted", "Scoped repair approved. Repair is starting in an isolated worktree.");
