@@ -19,5 +19,7 @@ test-results/
 /repair.json
 /approval.json
 /response.json
+/bulk.json
+/seo-run.json
 
 .DS_Store
