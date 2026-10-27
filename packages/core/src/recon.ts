@@ -98,7 +98,7 @@ function findTarget(value: unknown, url: string): string | null {
   const record = value as Record<string, unknown>;
   const id = typeof record.target_id === "string" ? record.target_id : typeof record.targetId === "string" ? record.targetId : null;
   const candidateUrl = typeof record.url === "string" ? record.url : null;
-  if (id && candidateUrl) { try { if (new URL(candidateUrl).origin === origin) return id; } catch { return null; } }
+  if (id && candidateUrl) { try { if (new URL(candidateUrl).origin === origin) return id; } catch {} }
   for (const child of Object.values(record)) { const match = findTarget(child, url); if (match) return match; }
   return null;
 }
