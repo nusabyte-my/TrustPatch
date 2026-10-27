@@ -6,6 +6,7 @@ Local hackathon implementation for the Meta Global AI Developer Hackathon, Start
 
 ## Implemented surface
 
+- Hermes-style Target Console: enter target + objective + constraints, preview typed tools, then execute in the real repair workflow.
 - Chat-driven run creation and read-only investigation mode.
 - Mend coordinator with Inspector, Mapper, Repair, and Verifier roles.
 - Raw HTML, rendered DOM, headers, screenshots, source context, diffs, and verification artifacts persisted with SHA-256 metadata.

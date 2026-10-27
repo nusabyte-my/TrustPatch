@@ -2,7 +2,17 @@
 
 Open **http://localhost:7258** after running `pnpm dev`.
 
-## 1. Choose a workflow
+## 1. Give Mend a target
+
+Use **Target Console** for a Hermes-style instruction:
+
+> Inspect http://127.0.0.1:3100. Check indexing, security headers, SEO and JSON-LD. Read-only.
+
+Confirm authorization and select **Plan agent tools**. The console shows the typed tools selected for the target, then **Execute plan in workbench** passes the objective into the actual Inspector/SEO/Repair/Verifier workflow. It is a typed planner, not an unrestricted shell or autonomous deployment agent.
+
+For external domains, provide the approved scope and an ownership manifest/DNS verification for production use. Remote targets remain read-only; code repair is limited to the authorized local fixture.
+
+## 2. Choose a workflow
 
 | Workflow | What it does |
 |---|---|
@@ -13,7 +23,7 @@ Open **http://localhost:7258** after running `pnpm dev`.
 
 Select **How to use TrustPatch** in the application for this guide.
 
-## 2. Inspect a site
+## 3. Inspect a site
 
 1. Enter an objective in plain English.
 2. Include constraints such as excluded paths or “do not patch.”
@@ -26,7 +36,7 @@ Example:
 
 The run displays the exact target URL. Use **Raw**, **Rendered**, or **Headers** evidence to verify the finding yourself.
 
-## 3. Approve a repair
+## 4. Approve a repair
 
 1. Read the finding count and allowed files.
 2. Check whether draft-PR creation is permitted.
@@ -35,7 +45,7 @@ The run displays the exact target URL. Use **Raw**, **Rendered**, or **Headers**
 
 Self-repair is allowed only within the approved finding set and file scope. Any new file or capability requires renewed approval.
 
-## 4. Understand the result
+## 5. Understand the result
 
 - **Verification failed:** the patched application did not satisfy a required behavioral check. Mend may retry within the approved scope.
 - **Validated locally:** every selected check passed in an independent patched-worktree build.
@@ -43,7 +53,7 @@ Self-repair is allowed only within the approved finding set and file scope. Any 
 
 The Proof Receipt shows changed files, checks, branch, and deployment state. Validation does not mean merged, deployed, higher rankings, or guaranteed AI citations.
 
-## 5. Run a bulk audit
+## 6. Run a bulk audit
 
 1. Expand **Bulk authorized-site audit**.
 2. Enter a registrable domain such as `example.com`, not just a suffix such as `com`.
@@ -56,7 +66,7 @@ Bulk checks cover indexing, canonical targets, response policy, metadata, social
 
 Bulk mode does not exploit targets, prove absence of vulnerabilities, or change code. Real public use additionally requires an ownership manifest or DNS verification instead of relying only on the confirmation checkbox.
 
-## 6. What Mend checks
+## 7. What Mend checks
 
 - **Security/response:** missing `X-Content-Type-Options`, indexing and canonical defects, and captured response evidence.
 - **Technical SEO:** titles, descriptions, H1/main structure, image alt coverage, internal links, and content depth.
@@ -65,7 +75,7 @@ Bulk mode does not exploit targets, prove absence of vulnerabilities, or change 
 
 No unsupported “ASX” label or guaranteed SEO/AI-citation claim is used.
 
-## 7. Deployment and boundaries
+## 8. Deployment and boundaries
 
 See `DEPLOYMENT.md` for production setup, process management, backups, and single-VM requirements. The workbench runs on port **7258**; the authorized fixture runs on port **3100**. Patched previews use separate ports and should never be publicly exposed.
 

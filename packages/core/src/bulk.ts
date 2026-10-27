@@ -39,7 +39,8 @@ export function assertTargetInScope(target: string, scopeDomain: string): URL {
   if (host === "localhost" || host === "127.0.0.1" || host === "0.0.0.0" || host === "::1" || host === "2130706433" || host === "0177.0.0.1") throw new Error("Loopback targets must use the local fixture flow");
   if (/(?:^|\.)(?:local|internal|lan|intranet|corp)$/i.test(host)) throw new Error("Internal-network hostnames are not allowed in bulk mode");
   if (host.includes(":")) throw new Error("IPv6 targets require explicit private/ULA review before bulk auditing");
-  if (/^(10|127|169\.254|192\.168)\./.test(host) || /^172\.(1[6-9]|2\d|3[01])\./.test(host)) throw new Error("Private-network targets are not allowed in bulk mode");
+  const ipv4 = /^\d{1,3}(?:\.\d{1,3}){3}$/.test(host) ? host.split(".").map(Number) : null;
+  if (ipv4 && (ipv4.some((octet) => octet > 255) || ipv4[0] === 10 || ipv4[0] === 127 || (ipv4[0] === 169 && ipv4[1] === 254) || (ipv4[0] === 172 && ipv4[1] !== undefined && ipv4[1] >= 16 && ipv4[1] <= 31) || (ipv4[0] === 192 && ipv4[1] === 168))) throw new Error("Private-network targets are not allowed in bulk mode");
   if (host !== scopeDomain && !host.endsWith(`.${scopeDomain}`)) throw new Error(`${host} is outside approved scope ${scopeDomain}`);
   return url;
 }
