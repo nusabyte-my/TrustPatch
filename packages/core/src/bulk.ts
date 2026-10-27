@@ -35,8 +35,10 @@ export function parseScopeDomain(value: string): string {
 export function assertTargetInScope(target: string, scopeDomain: string): URL {
   const url = new URL(target);
   if (!["https:", "http:"].includes(url.protocol)) throw new Error("Only HTTP(S) targets are supported");
-  const host = url.hostname.toLowerCase();
-  if (host === "localhost" || host === "127.0.0.1" || host === "0.0.0.0" || host === "::1") throw new Error("Loopback targets must use the local fixture flow");
+  const host = url.hostname.toLowerCase().replace(/^\[|\]$/g, "").replace(/\.$/, "");
+  if (host === "localhost" || host === "127.0.0.1" || host === "0.0.0.0" || host === "::1" || host === "2130706433" || host === "0177.0.0.1") throw new Error("Loopback targets must use the local fixture flow");
+  if (/(?:^|\.)(?:local|internal|lan|intranet|corp)$/i.test(host)) throw new Error("Internal-network hostnames are not allowed in bulk mode");
+  if (host.includes(":")) throw new Error("IPv6 targets require explicit private/ULA review before bulk auditing");
   if (/^(10|127|169\.254|192\.168)\./.test(host) || /^172\.(1[6-9]|2\d|3[01])\./.test(host)) throw new Error("Private-network targets are not allowed in bulk mode");
   if (host !== scopeDomain && !host.endsWith(`.${scopeDomain}`)) throw new Error(`${host} is outside approved scope ${scopeDomain}`);
   return url;

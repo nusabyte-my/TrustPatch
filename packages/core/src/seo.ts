@@ -91,10 +91,19 @@ export async function inspectSearchPolicy(store: TrustpatchDb, runId: string, co
   if (!contract.scope.includeChecks.includes("seo_crawl") || contract.scope.excludeChecks.includes("seo_crawl")) return { robotsText: null, sitemapStatus: 0, blockedAgents: [] };
   const origin = new URL(contract.targetUrl).origin;
   addEvent(store, runId, "seo", "activity", `Checking ${origin}/robots.txt and sitemap discovery for search and AI crawlers.`, { activity: "seo", status: "active", check: "crawl" });
-  const [robotsResponse, sitemapResponse] = await Promise.all([
-    fetch(`${origin}/robots.txt`, { signal: AbortSignal.timeout(15_000) }),
-    fetch(`${origin}/sitemap.xml`, { signal: AbortSignal.timeout(15_000) })
-  ]);
+  let robotsResponse: Response;
+  let sitemapResponse: Response;
+  try {
+    [robotsResponse, sitemapResponse] = await Promise.all([
+      fetch(`${origin}/robots.txt`, { signal: AbortSignal.timeout(15_000) }),
+      fetch(`${origin}/sitemap.xml`, { signal: AbortSignal.timeout(15_000) })
+    ]);
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : "unknown network error";
+    addEvent(store, runId, "seo", "activity", `Crawler policy check unavailable: ${detail}. Page inspection continues; no policy conclusion inferred.`, { activity: "seo", status: "info", check: "crawl", available: false });
+    storeEvidence(store, runId, "crawler-policy-unavailable", { detail });
+    return { robotsText: null, sitemapStatus: 0, blockedAgents: [] };
+  }
   const robotsText = robotsResponse.ok ? await robotsResponse.text() : null;
   storeEvidence(store, runId, "robots-policy", { status: robotsResponse.status, content: robotsText });
   storeEvidence(store, runId, "sitemap-discovery", { status: sitemapResponse.status });

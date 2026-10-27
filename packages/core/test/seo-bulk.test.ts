@@ -9,6 +9,9 @@ describe("authorized bulk target scoping", () => {
     expect(() => assertTargetInScope("https://other.test", "example.com")).toThrow("outside approved scope");
     expect(() => assertTargetInScope("http://127.0.0.1:3100", "example.com")).toThrow("Loopback");
     expect(() => parseScopeDomain("com")).toThrow("bare TLD");
+    expect(() => assertTargetInScope("https://service.internal", "service.internal")).toThrow("Internal-network");
+    expect(() => assertTargetInScope("http://0177.0.0.1", "example.com")).toThrow("Loopback");
+    expect(assertTargetInScope("https://10.example.com", "example.com").hostname).toBe("10.example.com");
   });
   it("forces passive read-only contracts without repository or PR authority", () => {
     const [contract] = buildBulkContracts(createBulkJob("example.com", [target("https://example.com")]));

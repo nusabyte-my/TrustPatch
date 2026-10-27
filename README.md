@@ -15,7 +15,7 @@ Local hackathon implementation for the Meta Global AI Developer Hackathon, Start
 - Read-only, `noindex`, canonical, and `X-Content-Type-Options` workflows.
 - Live Mend activity stream: queued inspection, per-URL checks, vulnerability alerts, approval requests, patch attempts, failed verification, and completion states.
 - SEO/AEO/GEO analysis: metadata, social previews, semantic structure, JSON-LD, content depth, internal links, answer extractability, robots, and sitemap discovery.
-- Scoped bulk authorized-site auditing with passive checks, per-site progress, and failure isolation.
+- Scoped bulk authorized-site auditing with passive checks, per-site progress, and failure isolation. Verified by creating and completing an authorized `prodigylearning.my` audit with 3 findings; evidence navigation opens the stored run.
 - Findings, approval card, diff viewer, and Proof Receipt UI.
 - Meta Responses API tool-call planner for `AGENT_MODE=meta`; labeled deterministic `fixture-planner` for offline development.
 - GitHub draft-PR publication when credentials are configured; no merge or deployment path.
@@ -46,6 +46,7 @@ Exercised successfully on October 27, 2026:
 pnpm typecheck
 pnpm test
 pnpm test:adversarial
+pnpm test:e2e
 pnpm build
 ```
 

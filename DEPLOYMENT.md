@@ -42,7 +42,7 @@ pnpm build
 
 ## 3. Single-server deployment
 
-Use a persistent Linux VM with Node 22 LTS, pnpm, Git, and Playwright Chromium system dependencies. A single VM is required for the current SQLite + local artifact + local Git-worktree architecture. Do not deploy this version as multiple stateless replicas.
+Use a persistent Linux VM with Node 22 LTS, pnpm, Git, and Playwright Chromium system dependencies. A single VM is required for the current SQLite + local artifact + local Git-worktree architecture. Do not deploy this version as multiple stateless replicas. Install dependencies with `NODE_ENV=development` or without production-only pruning so the worker's `tsx` runtime is present; do not run `pnpm install --prod` for this package.
 
 Recommended process model:
 
@@ -94,7 +94,7 @@ Group=trustpatch
 WorkingDirectory=/srv/trustpatch
 Environment=NODE_ENV=production
 EnvironmentFile=/srv/trustpatch/.env
-ExecStart=/usr/bin/pnpm start:web
+ExecStart=/usr/bin/env pnpm start:web
 Restart=on-failure
 RestartSec=5
 
@@ -102,7 +102,7 @@ RestartSec=5
 WantedBy=multi-user.target
 ```
 
-Use a second equivalent unit named `trustpatch-worker.service` with `ExecStart=/usr/bin/pnpm start:worker`. Only the worker needs GitHub credentials and model mutation access. Avoid putting GitHub tokens into the web process environment where practical.
+Use a second equivalent unit named `trustpatch-worker.service` with `ExecStart=/usr/bin/env pnpm start:worker`. Only the worker needs GitHub credentials and model mutation access. Avoid putting GitHub tokens into the web process environment where practical.
 
 ### Reverse proxy example
 
@@ -117,6 +117,7 @@ server {
         proxy_set_header Host $host;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_read_timeout 300s;
     }
 }
 ```
