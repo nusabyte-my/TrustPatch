@@ -8,6 +8,7 @@ import { addEvent } from "./store";
 import { analyzeSeoPage, inspectSearchPolicy } from "./seo";
 import { observeReactivePage, storeReactiveDiagnostics } from "./recon";
 import { assertResolvablePublicTarget } from "./target-safety";
+import { inspectWebsiteSecurity } from "./security";
 
 export async function inspectSite(store: TrustpatchDb, runId: string, contract: RunContract): Promise<Finding[]> {
   const findings: Finding[] = [];
@@ -47,6 +48,8 @@ export async function inspectSite(store: TrustpatchDb, runId: string, contract: 
       const robots = $("meta[name='robots']").attr("content")?.toLowerCase() ?? "";
       const canonical = $("link[rel='canonical']").attr("href") ?? null;
       const common = { runId, state: "observed" as const, url, sourceFiles: [], evidenceIds: [rawEvidence.id, renderedEvidence.id, headerEvidence.id, screenshot.id] };
+      const securityFindings = await inspectWebsiteSecurity(store, runId, contract, { url, raw, rendered, headers, evidenceIds: common.evidenceIds });
+      findings.push(...securityFindings);
       const seoFindings = analyzeSeoPage(store, $, { ...common, path, title: $("title").text(), description: "", status, headers }, contract);
       findings.push(...seoFindings);
       addEvent(store, runId, "seo", "activity", `SEO analysis complete on ${path}: ${seoFindings.length} evidence-backed opportunities.`, { activity: "seo", status: seoFindings.length ? "warning" : "success", count: seoFindings.length, url });

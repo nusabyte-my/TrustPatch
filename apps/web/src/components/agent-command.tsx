@@ -13,7 +13,7 @@ const agents = [
   { role: "inspector", label: "Inspector", task: "Observes pages + headers", intro: "I check what search engines and visitors actually receive.", icon: ScanSearch },
   { role: "mapper", label: "Mapper", task: "Maps findings to files", intro: "I connect confirmed problems to the files responsible.", icon: Map },
   { role: "seo", label: "SEO Red / Blue", task: "Challenges and verifies search visibility", intro: "Red Team finds the evidence-backed weakness. Blue Team defines the safe optimization and proof target.", icon: FileSearch },
-  { role: "recon", label: "Recon", task: "Reactive browser + optional REA", intro: "I watch the real browser for errors and failed resources.", icon: Radar },
+  { role: "recon", label: "Security Recon", task: "Public artifacts + API leak evidence", intro: "I inspect public website and repository evidence, redact secret indicators, and never use or validate credentials.", icon: Radar },
   { role: "repair", label: "Repair", task: "Patches approved scope", intro: "I prepare only the changes you explicitly approve.", icon: Code2 },
   { role: "verifier", label: "Verifier", task: "Proves the result", intro: "I test the result independently before calling it fixed.", icon: ShieldCheck }
 ];

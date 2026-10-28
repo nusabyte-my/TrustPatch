@@ -10,12 +10,13 @@ export const runStatusSchema = z.enum([
 export type RunStatus = z.infer<typeof runStatusSchema>;
 export const findingKindSchema = z.enum([
   "noindex", "canonical", "security_header", "seo_metadata", "seo_social",
-  "seo_structure", "seo_schema", "seo_content", "seo_links", "seo_crawl", "seo_answer"
+  "seo_structure", "seo_schema", "seo_content", "seo_links", "seo_crawl", "seo_answer",
+  "api_leak", "security_misconfiguration", "exposed_artifact", "repo_secret", "repo_config"
 ]);
 export type FindingKind = z.infer<typeof findingKindSchema>;
 export const findingStateSchema = z.enum(["observed", "verified", "approved", "repaired", "validated", "blocked", "out_of_scope"]);
 export const scopeSchema = z.object({
-  includeChecks: z.array(findingKindSchema).default(["noindex", "canonical", "security_header", "seo_metadata", "seo_social", "seo_structure", "seo_schema", "seo_content", "seo_links", "seo_crawl", "seo_answer"]),
+  includeChecks: z.array(findingKindSchema).default(["noindex", "canonical", "security_header", "seo_metadata", "seo_social", "seo_structure", "seo_schema", "seo_content", "seo_links", "seo_crawl", "seo_answer", "api_leak", "security_misconfiguration", "exposed_artifact", "repo_secret", "repo_config"]),
   excludeChecks: z.array(findingKindSchema).default([]),
   includePaths: z.array(z.string()).default([]),
   excludePaths: z.array(z.string()).default([]),
@@ -31,6 +32,7 @@ export const runContractSchema = z.object({
   readOnly: z.boolean().default(false),
   seoMode: z.enum(["standard", "red_blue"]).default("standard"),
   authorizedLocalFixture: z.boolean().default(false),
+  targetType: z.enum(["website", "github"]).default("website"),
   scope: scopeSchema,
   createPr: z.boolean().default(false),
   maxPages: z.number().int().min(1).max(50).default(12),
@@ -44,6 +46,7 @@ export const createRunSchema = z.object({
   repositoryPath: z.string().optional(),
   scope: scopeSchema.partial().optional(),
   readOnly: z.boolean().optional(),
+  targetType: z.enum(["website", "github"]).default("website").optional(),
   seoMode: z.enum(["standard", "red_blue"]).default("standard").optional(),
   ownershipConfirmed: z.literal(true),
   createPr: z.boolean().optional()

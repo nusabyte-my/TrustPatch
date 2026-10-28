@@ -16,3 +16,4 @@ export * from "./target-console";
 export * from "./target-safety";
 export * from "./github";
 export * from "./follow-up";
+export * from "./security";

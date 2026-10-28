@@ -26,6 +26,7 @@ export async function createAndExecuteRun(input: CreateRunInput) {
     }
   });
   contract.readOnly = parsed.readOnly ?? targetPlan.readOnly;
+  contract.targetType = parsed.targetType ?? "website";
   contract.seoMode = parsed.seoMode ?? "standard";
   if (!contract.readOnly && !contract.scope.allowedFiles.length) contract.scope.allowedFiles = ["app/layout.tsx", "app/page.tsx", "app/services/page.tsx", "next.config.ts"];
   if (!parsed.repositoryPath) {

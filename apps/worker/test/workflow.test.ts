@@ -37,7 +37,8 @@ describe("Mend full repair workflow", { timeout: 300_000 }, () => {
     await executeRun(store, runId);
     const pending = getRunView(store, runId);
     expect(pending.status).toBe("awaiting_approval");
-    expect(pending.proof?.findings.map((finding) => finding.kind).sort()).toEqual(["canonical", "noindex", "security_header"]);
+    expect(pending.proof?.findings.filter((finding) => ["canonical", "noindex", "security_header"].includes(finding.kind)).map((finding) => finding.kind).sort()).toEqual(["canonical", "noindex", "security_header"]);
+    expect(pending.proof?.findings.filter((finding) => finding.kind === "security_misconfiguration")).toHaveLength(10);
     expect(pending.approval?.allowedFiles).toContain("app/layout.tsx");
     grantApproval(store, runId, pending.approval!.scopeDigest);
     const result = await executeRun(store, runId);

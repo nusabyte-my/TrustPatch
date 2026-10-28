@@ -2,7 +2,7 @@ import { resolve } from "node:path";
 
 import {
   addEvent, applyRepairPlan, createDatabase, getContract, getEvents, getFindings, getRunView,
-  inspectSite, enrichWithRea, mapRepository, migrateDatabase, planRepairs, plannerName, requestApproval, runSeoOperations,
+  inspectSite, inspectGithubSecurity, enrichWithRea, mapRepository, migrateDatabase, planRepairs, plannerName, requestApproval, runSeoOperations,
   saveFindings, saveProof, setStatus, startPatchedPreview, updateFindingStates, verifyRepair,
   ProviderError, type TrustpatchDb
 } from "@trustpatch/core";
@@ -24,7 +24,7 @@ export async function executeRun(store: TrustpatchDb, runId: string): Promise<Ru
       addEvent(store, runId, "mend", "activity", `Target accepted: ${contract.targetUrl}. Tool plan is executing; no code has been changed.`, { activity: "inspection", status: "active", targetUrl: contract.targetUrl });
       addEvent(store, runId, "mend", "activity", contract.authorizedLocalFixture ? "Inspector and Mapper are working in parallel. I’m collecting raw pages, rendered metadata, response headers, and source context." : "Inspector and SEO are collecting page evidence, response policy, and search/AI-search readiness.", { activity: "inspection", status: "active" });
       const [observations, mapped] = await Promise.all([
-        inspectSite(store, runId, contract).then(async (result) => { await enrichWithRea(store, runId, contract.targetUrl); return result; }),
+        (contract.targetType === "github" ? inspectGithubSecurity(store, runId, contract) : inspectSite(store, runId, contract)).then(async (result) => { if (contract.targetType === "website") await enrichWithRea(store, runId, contract.targetUrl); return result; }),
         Promise.resolve().then(() => contract.authorizedLocalFixture ? mapRepository(store, runId, contract) : { files: {}, evidenceId: null })
       ]);
       const reactiveCaptured = getEvents(store, runId).some((event) => event.role === "recon" && event.data.activity === "recon" && typeof event.data.evidenceId === "string");
