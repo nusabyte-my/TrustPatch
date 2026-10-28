@@ -23,3 +23,13 @@ test-results/
 /seo-run.json
 
 .DS_Store
+# Installed skill demo/tooling is not part of the app runtime.
+.agents/skills/fun-isometric/bin/
+.agents/skills/fun-isometric/site/
+.agents/skills/fun-isometric/public/
+.agents/skills/fun-isometric/bun.lock
+.agents/skills/fun-isometric/index.html
+.agents/skills/fun-isometric/main.tsx
+.agents/skills/fun-isometric/package.json
+.agents/skills/fun-isometric/vercel.json
+.agents/skills/fun-isometric/vite.config.ts
