@@ -1,0 +1,72 @@
+:root { --ink:#111b24; --paper:#f7f8f5; --surface:#edf1ee; --border:#d5dcd9; --muted:#56616b; --copper:#2457e6; --copper-dark:#183da9; --copper-subtle:#e3eafa; --verified:#147b55; --verified-subtle:#dff1e8; --error:#a13f35; --warning:#805916; --radius-panel:14px; }
+button:focus-visible,a:focus-visible,textarea:focus-visible,pre:focus-visible,input:focus-visible,summary:focus-visible { outline:2px solid var(--cobalt,#2457e6); outline-offset:3px; }
+::selection { background:#dce6fb; color:#111b24; }
+.agent-command,.mission-brief { border-color:var(--line); border-radius:14px; box-shadow:0 20px 44px -30px rgba(17,27,36,.35); }
+.mission-conversation { background:#fbfcfa; }
+.mission-live,.workflow-activity { background:var(--night); color:#eef3f5; }
+.mend-avatar,.mission-start,.command-approve { background:var(--cobalt); box-shadow:none; }
+.mend-avatar { border-radius:9px; }
+.mission-start:hover:not(:disabled),.command-approve:hover:not(:disabled) { background:var(--cobalt-dark); filter:none; }
+.mission-start:active,.command-approve:active { background:var(--ink); }
+.mission-start:disabled,.command-approve:disabled { background:#94a0aa; }
+.mission-speaker,.mission-progress button.active,.mission-chips button.selected,.decision-label,.agent-focus-role,.client-decision-bar>div:first-child>span,.drawer-finding>span { color:var(--cobalt); }
+.mission-progress button.active span { background:var(--cobalt); border-color:var(--cobalt); }
+.mission-progress button.complete span { background:#dff1e8; color:var(--verified); border-color:#a4d4bd; }
+.mission-goals button { background:#f7f9f6; border-color:var(--line); border-radius:9px; }
+.mission-goals button:hover { transform:none; border-color:var(--cobalt); background:#eef3fc; }
+.mission-goals svg { color:var(--cobalt); }
+.mission-authority-choice button,.mission-chips button { border-color:var(--line); border-radius:7px; }
+.mission-authority-choice button.selected,.mission-chips button.selected { background:#e7eefb; border-color:#9bb3e9; color:var(--cobalt-dark); }
+.mission-review { background:#eef2ef; border-radius:9px; }
+.mission-step input:not([type=checkbox]),.mission-step textarea { background:#fbfcfa; border-color:var(--line); border-radius:7px; }
+.mission-step input:focus-visible,.mission-step textarea:focus-visible { outline-color:var(--cobalt); }
+.mission-authority input { accent-color:var(--cobalt); }
+.mission-navigation button,.new-mission-button,.client-mode-toggle,.client-decision-chips button { color:var(--cobalt-dark); }
+.mission-live dt,.mission-team>span,.mission-live-heading { color:#adbbc5; }
+.mission-live dd,.mission-team strong { color:#edf2f5; }
+.mission-team p { color:#b5c1c9; }
+.mission-suggestion { background:#ffffff08; border-color:#ffffff1c; color:#d7e2e8; }
+.mission-suggestion svg { color:#8ab2ff; }
+.command-state { background:#e5ebf8; color:var(--cobalt-dark); }
+.command-state-validated { background:#dff1e8; color:var(--verified); }
+.command-live { background:var(--cobalt); box-shadow:0 0 0 4px #e1e9f9; }
+.command-progress { background:#e4e9e6; }
+.command-progress span { background:var(--cobalt); }
+.agent-roster { background:#f2f5f2; border-color:var(--line); }
+.agent-role-selected { border-color:#9cb4e6; box-shadow:0 6px 16px -12px rgba(36,87,230,.45); }
+.agent-role:hover { background:#e8eef9; }
+.agent-icon { background:#e3eafa; color:var(--cobalt-dark); }
+.agent-role-working .agent-role-state { color:var(--cobalt); }
+.agent-role-done .agent-role-state { color:var(--verified); }
+.agent-focus-actions button { border-color:var(--line); color:var(--cobalt-dark); }
+.agent-focus-actions button:hover:not(:disabled) { background:#e8eef9; }
+.command-decision { background:#f3f6f3; border-color:var(--line); }
+.decision-checks>div { color:var(--verified); }
+.client-decision-bar { background:#edf2fb; border-color:#d3def1; }
+.client-decision-chips button { border-color:#b6c7e9; }
+.client-decision-chips button:hover:not(:disabled) { background:#dfe8f8; }
+.client-mode-toggle { background:#edf2fb; border-color:#c1d0eb; }
+.client-mode-toggle:hover { background:#dfe8f8; }
+.finding-business-impact { color:#284a81!important; background:#edf2fa; }
+.drawer-close { border-color:var(--line); }
+.drawer-close:hover { background:#e8eef9; }
+.drawer-finding button { background:#e7eefb; color:var(--cobalt-dark); }
+.workflow-activity { border-color:#32414d; }
+.workflow-title { background:none; color:#e3ecf2; animation:none; }
+.workflow-heading p:not(.workflow-title),.workflow-line { color:#a9b7c2; }
+.workflow-live-label,.workflow-role,.workflow-expand { color:#9db8f5; }
+.workflow-pulse { background:#7ca4ff; animation-name:workflow-pulse-cobalt; }
+.workflow-trace { border-color:#506577; }
+.workflow-line.current { color:#e0e9ef; }
+.workflow-line.current svg { color:#8eafff; }
+.workflow-expand:hover { color:#ffffff; }
+.agent-focus-heading,.focus-dot-active { color:var(--cobalt); }
+.focus-dot-active { background:var(--cobalt); }
+.focus-dot-success { background:var(--mint); }
+.agent-scrim { background:rgba(17,27,36,.55); }
+.agent-drawer { background:var(--paper); box-shadow:-20px 0 60px rgba(17,27,36,.22); }
+.drawer-activity li>span { color:var(--cobalt); }
+.mission-progress button span,.mission-progress,.command-status,.mission-steps,.drawer-heading,.drawer-finding,.drawer-activity li,.command-decision li { border-color:var(--line); }
+@keyframes workflow-pulse-cobalt { 0% { box-shadow:0 0 0 0 rgba(124,164,255,.4); } 60%,100% { box-shadow:0 0 0 7px rgba(124,164,255,0); } }
+.impact-case { border:0; background:transparent; box-shadow:none; }
+footer { border-color:var(--line); }

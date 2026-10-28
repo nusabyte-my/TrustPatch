@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+
 import { Check, ChevronRight, LoaderCircle, TerminalSquare } from "lucide-react";
 import type { RunEvent } from "@trustpatch/contracts";
 
@@ -11,11 +11,9 @@ const phaseText: Record<string, { title: string; detail: string }> = {
   verifying: { title: "Proving the result", detail: "Building and checking the isolated repair" }
 };
 export function WorkflowActivity({ status, events, onOpen }: { status: string; events: RunEvent[]; onOpen: (trigger: HTMLButtonElement) => void }) {
-  const [tick, setTick] = useState(0);
   const active = ["queued", "investigating", "repairing", "verifying"].includes(status);
-  useEffect(() => { if (!active) return; const timer = window.setInterval(() => setTick((value) => value + 1), 2600); return () => window.clearInterval(timer); }, [active]);
   if (!active) return null;
   const phase = phaseText[status] ?? phaseText.queued!;
   const latest = events.filter((event) => event.type === "activity").slice(-2).reverse();
-  return <section className="workflow-activity" aria-label="Live agent workflow"><div className="workflow-heading"><span className="workflow-pulse" /><div><p className="workflow-title" key={`${status}-${tick % 2}`}>{phase.title}<span className="workflow-ellipsis" aria-hidden="true">…</span></p><p>{phase.detail}</p></div><span className="workflow-live-label">Live</span></div><div className="workflow-trace">{latest.length ? latest.map((event, index) => <div className={`workflow-line ${index === 0 ? "current" : ""}`} key={event.id}><span className="workflow-line-icon">{index === 0 ? <LoaderCircle size={13} aria-hidden="true" /> : <Check size={13} aria-hidden="true" />}</span><span className="workflow-role">{event.role}</span><span className="workflow-message">{event.message}</span></div>) : <div className="workflow-line current"><LoaderCircle size={13} aria-hidden="true" /><span className="workflow-role">mend</span><span>Accepting the mission and preparing the first tool call</span></div>}</div><button className="workflow-expand" type="button" onClick={(event) => onOpen(event.currentTarget)}><TerminalSquare size={14} aria-hidden="true" /> Inspect live execution <ChevronRight size={14} aria-hidden="true" /></button></section>;
+  return <section className="workflow-activity" aria-label="Live agent workflow"><div className="workflow-heading"><span className="workflow-pulse" /><div><p className="workflow-title" key={status}>{phase.title}<span className="workflow-ellipsis" aria-hidden="true">…</span></p><p>{phase.detail}</p></div><span className="workflow-live-label">Live</span></div><div className="workflow-trace">{latest.length ? latest.map((event, index) => <div className={`workflow-line ${index === 0 ? "current" : ""}`} key={event.id}><span className="workflow-line-icon">{index === 0 ? <LoaderCircle size={13} aria-hidden="true" /> : <Check size={13} aria-hidden="true" />}</span><span className="workflow-role">{event.role}</span><span className="workflow-message">{event.message}</span></div>) : <div className="workflow-line current"><LoaderCircle size={13} aria-hidden="true" /><span className="workflow-role">mend</span><span>Accepting the mission and preparing the first tool call</span></div>}</div><button className="workflow-expand" type="button" onClick={(event) => onOpen(event.currentTarget)}><TerminalSquare size={14} aria-hidden="true" /> Inspect live execution <ChevronRight size={14} aria-hidden="true" /></button></section>;
 }

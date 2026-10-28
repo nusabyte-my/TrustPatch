@@ -10,6 +10,7 @@ import "./landing.css";
 import "./agent-command.css";
 import "./mission.css";
 import "./workflow.css";
+import "./theme.css";
 
 export const metadata: Metadata = { title: "TrustPatch — Watch a real repair happen", description: "Give Mend a website target. Inspect evidence, approve an isolated repair, and verify the result." };
 export default function RootLayout({ children }: { children: ReactNode }) {
