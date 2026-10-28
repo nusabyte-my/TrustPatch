@@ -40,7 +40,7 @@ export async function executeRun(store: TrustpatchDb, runId: string): Promise<Ru
       const seoReviewCount = findings.length - repairCandidates.length;
       const withSources = findings.map((finding) => ({
         ...finding,
-        sourceFiles: finding.kind === "security_header" ? ["next.config.ts"] : finding.kind === "noindex" ? ["app/services/page.tsx", "app/layout.tsx"] : ["app/services/page.tsx"]
+        sourceFiles: finding.sourceFiles.length ? finding.sourceFiles : finding.kind === "security_header" ? ["next.config.ts"] : finding.kind === "noindex" ? ["app/services/page.tsx", "app/layout.tsx"] : ["app/services/page.tsx"]
       }));
       saveFindings(store, withSources);
       if (contract.seoMode === "red_blue") runSeoOperations(store, runId, withSources);

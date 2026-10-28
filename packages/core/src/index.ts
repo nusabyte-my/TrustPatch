@@ -17,3 +17,4 @@ export * from "./target-safety";
 export * from "./github";
 export * from "./follow-up";
 export * from "./security";
+export * from "./vulnerability";

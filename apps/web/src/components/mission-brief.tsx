@@ -11,7 +11,7 @@ const goals = [
   { id: "traffic", title: "Get more search traffic", detail: "Indexing, canonical targets, and search readiness", objective: "Improve search discovery and remove technical indexing barriers" },
   { id: "trust", title: "Fix security and trust issues", detail: "Passive response-policy and browser diagnostics", objective: "Identify security-header and runtime trust issues without exploiting the site" },
   { id: "security", title: "Run a security and API-leak audit", detail: "Public artifacts, browser security, and redacted secret indicators", objective: "Inspect public website content, security headers, and client-side secret indicators without using credentials or exploiting the target" },
-  { id: "github", title: "Audit a GitHub repository", detail: "Repository secrets, risky configuration, and supply-chain evidence", objective: "Inspect public repository files for secret indicators, risky configuration, and supply-chain evidence without exposing or validating secrets" },
+  { id: "github", title: "Audit a GitHub repository", detail: "Secrets, risky configuration, dependency CVEs, and supply-chain evidence", objective: "Inspect public repository files for secret indicators, risky configuration, and dependency vulnerabilities using exact or locked versions, without exposing or validating secrets" },
   { id: "ai", title: "Make the site easier for AI to understand", detail: "Structured data, answers, and crawler access", objective: "Improve accurate AI extraction and answer readiness" },
   { id: "problem", title: "Investigate a technical problem", detail: "Reactive errors, failed requests, and page evidence", objective: "Investigate the reported technical issue and preserve reproducible evidence" },
   { id: "audit", title: "Prepare a client-ready website audit", detail: "Evidence, business context, and next actions", objective: "Prepare an evidence-backed client website audit" }
@@ -20,7 +20,9 @@ const checks: Array<{ kind: FindingKind; label: string }> = [
   { kind: "noindex", label: "Indexing" }, { kind: "canonical", label: "Canonical URLs" }, { kind: "security_header", label: "Security headers" },
   { kind: "seo_metadata", label: "Metadata" }, { kind: "seo_social", label: "Social previews" }, { kind: "seo_structure", label: "Page structure" },
   { kind: "seo_schema", label: "Structured data" }, { kind: "seo_content", label: "Content depth" }, { kind: "seo_links", label: "Internal links" },
-  { kind: "seo_crawl", label: "Crawler policy" }, { kind: "seo_answer", label: "AI answer readiness" }
+  { kind: "seo_crawl", label: "Crawler policy" }, { kind: "seo_answer", label: "AI answer readiness" },
+  { kind: "api_leak", label: "Secret indicators" }, { kind: "security_misconfiguration", label: "Browser/API policy" }, { kind: "exposed_artifact", label: "Insecure artifacts" },
+  { kind: "repo_secret", label: "Repository secrets" }, { kind: "repo_config", label: "Repository configuration" }, { kind: "dependency_vulnerability", label: "Dependency vulnerabilities" }
 ];
 export function MissionBrief({ busy, onExecute }: Props) {
   const [step, setStep] = useState(0);

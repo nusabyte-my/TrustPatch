@@ -5,6 +5,7 @@ import type { TrustpatchDb } from "./db";
 import { storeEvidence } from "./evidence";
 import { addEvent } from "./store";
 import { fetchPublic } from "./target-safety";
+import { scanDependencyVulnerabilities } from "./vulnerability";
 
 const secretPatterns = [
   { name: "AWS access key", regex: /\b(AKIA|ASIA)[A-Z0-9]{16}\b/g },
@@ -64,13 +65,20 @@ export async function inspectWebsiteSecurity(store: TrustpatchDb, runId: string,
 }
 
 interface GithubRepo { full_name: string; default_branch: string; private: boolean; html_url: string }
-interface GithubFile { name: string; path: string; type: string; size: number; download_url: string | null }
+interface GithubFile { path: string; type: string; size: number }
 async function githubJson<T>(url: string): Promise<T> {
   const headers: Record<string, string> = { Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28", "User-Agent": "TrustPatch-Authorized-Inspection/0.1" };
   if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
   const response = await fetch(url, { headers, signal: AbortSignal.timeout(20_000) });
   if (!response.ok) throw new Error(`GitHub API returned ${response.status}`);
   return response.json() as Promise<T>;
+}
+export function selectGithubFiles(files: GithubFile[]) {
+  const allowedExtensions = new Set([".ts", ".tsx", ".js", ".jsx", ".json", ".yml", ".yaml", ".env", ".example", ".md", ".config", ".txt", ".py", ".rb", ".go", ".java", ".cs", ".php", ".sh", ".toml", ".lock"]);
+  return files.filter((file) => {
+    const name = file.path.split("/").at(-1) ?? "";
+    return file.type === "blob" && file.size <= 500_000 && (allowedExtensions.has(name.includes(".") ? name.slice(name.lastIndexOf(".")) : name) || /(?:^|\/)(?:\.env|Dockerfile|next\.config\.[jt]s|package\.json)$/.test(file.path));
+  }).slice(0, 80);
 }
 export async function inspectGithubSecurity(store: TrustpatchDb, runId: string, contract: RunContract) {
   const match = contract.targetUrl.match(/^https:\/\/github\.com\/([^/]+)\/([^/]+?)(?:\.git)?\/?$/i);
@@ -80,16 +88,17 @@ export async function inspectGithubSecurity(store: TrustpatchDb, runId: string, 
   const repo = await githubJson<GithubRepo>(`https://api.github.com/repos/${owner}/${repoName}`);
   const branch = repo.default_branch;
   const tree = await githubJson<{ tree: GithubFile[]; truncated: boolean }>(`https://api.github.com/repos/${owner}/${repoName}/git/trees/${encodeURIComponent(branch)}?recursive=1`);
-  const allowedExtensions = new Set([".ts", ".tsx", ".js", ".jsx", ".json", ".yml", ".yaml", ".env", ".example", ".md", ".config", ".txt", ".py", ".rb", ".go", ".java", ".cs", ".php", ".sh", ".toml"]);
-  const files = tree.tree.filter((file) => file.type === "blob" && file.download_url && file.size <= 180_000 && (allowedExtensions.has(file.name.includes(".") ? file.name.slice(file.name.lastIndexOf(".")) : file.name) || /(?:^|\/)(?:\.env|Dockerfile|next\.config\.[jt]s|package\.json)$/.test(file.path))).slice(0, 80);
+  const files = selectGithubFiles(tree.tree);
   const findings: Finding[] = [];
+  const manifestContents: Array<{ path: string; content: string }> = [];
   const scanned: Array<{ path: string; sha256Evidence: boolean }> = [];
   for (const file of files) {
-    if (!file.download_url) continue;
-    const response = await fetchPublic(file.download_url);
-    if (!response.ok) continue;
+    const rawUrl = `https://raw.githubusercontent.com/${encodeURIComponent(owner)}/${encodeURIComponent(repoName)}/${encodeURIComponent(branch)}/${file.path.split("/").map(encodeURIComponent).join("/")}`;
+    const response = await fetchPublic(rawUrl);
+    if (!response.ok) throw new Error(`GitHub raw content returned ${response.status} for ${file.path}`);
     const content = await response.text();
     const evidence = storeEvidence(store, runId, "repo-content", { repository: repo.full_name, path: file.path, content });
+    manifestContents.push({ path: file.path, content });
     scanned.push({ path: file.path, sha256Evidence: true });
     const leaks = leakFindings(runId, `${repo.html_url}/blob/${branch}/${file.path}`, content, [evidence.id], [file.path]);
     findings.push(...leaks);
@@ -97,8 +106,10 @@ export async function inspectGithubSecurity(store: TrustpatchDb, runId: string, 
     if (/next\.config\.[jt]s$/.test(file.path) && /ignoreBuildErrors\s*:\s*true|ignoreDuringBuilds\s*:\s*true/.test(content)) findings.push({ id: `find_${randomUUID()}`, runId, kind: "repo_config", state: "observed", title: "Build-time error checks bypassed", summary: "Repository configuration suppresses build or ESLint errors, allowing defects to pass silently.", observed: { path: file.path, pattern: "ignoreBuildErrors/ignoreDuringBuilds" }, url: `${repo.html_url}/blob/${branch}/${file.path}`, sourceFiles: [file.path], evidenceIds: [evidence.id] });
     if (/package\.json$/.test(file.path) && /"(?:preinstall|postinstall|prepare)"\s*:/.test(content)) findings.push({ id: `find_${randomUUID()}`, runId, kind: "repo_config", state: "observed", title: "Lifecycle scripts require supply-chain review", summary: "Package lifecycle scripts execute during installation; review their exact behavior before trusting the dependency workflow.", observed: { path: file.path, lifecycleScript: true }, url: `${repo.html_url}/blob/${branch}/${file.path}`, sourceFiles: [file.path], evidenceIds: [evidence.id] });
   }
-  const evidence = storeEvidence(store, runId, "github-security-inventory", { repository: repo.full_name, defaultBranch: branch, private: repo.private, filesInspected: scanned.length, truncated: tree.truncated, limitations: "Public/default branch inspection only. No git history, secret validation, private repository claim, or proof of exploitability." });
-  for (const finding of findings) { finding.evidenceIds = [...finding.evidenceIds, evidence.id]; addEvent(store, runId, "recon", "activity", `Repository security finding: ${finding.title}. Secret values remain redacted.`, { activity: "security", status: "warning", findingId: finding.id, kind: finding.kind }); }
+  const vulnerabilityFindings = await scanDependencyVulnerabilities(store, runId, manifestContents);
+  findings.push(...vulnerabilityFindings);
+  const evidence = storeEvidence(store, runId, "github-security-inventory", { repository: repo.full_name, defaultBranch: branch, private: repo.private, filesInspected: scanned.length, truncated: tree.truncated, limitations: "Public/default branch inspection of up to 80 eligible text files, 500 KB each. No git history, secret validation, private repository claim, or proof of exploitability." });
+  for (const finding of findings) { finding.evidenceIds = [...finding.evidenceIds, evidence.id]; addEvent(store, runId, "recon", "activity", `Repository security finding: ${finding.title}. Evidence is preserved; no secret values were used or validated.`, { activity: "security", status: "warning", findingId: finding.id, kind: finding.kind }); }
   addEvent(store, runId, "recon", "activity", `GitHub inspection complete: ${scanned.length} files reviewed, ${findings.length} findings. No secret values used or validated.`, { activity: "security", status: findings.length ? "warning" : "success", count: findings.length, evidenceId: evidence.id });
   return findings;
 }

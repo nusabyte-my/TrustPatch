@@ -12,6 +12,7 @@ Local hackathon implementation for the Meta Global AI Developer Hackathon, Start
 - Interactive Agent Command Center: seven selectable roles with introductions, client/technical language, live workflow shimmer and real execution trace, compact approval/Proof panel, and on-demand evidence/diff/activity drawer. Mapper emits real repository and worktree mapping events.
 - Reactive Recon: bounded Playwright console/page-error/failed-request/resource diagnostics on every target. Optional REA passive page + static bundle evidence via `REA_MCP_URL` and `REA_CDP_URL`; no REA claim when not configured.
 - Website and GitHub security reconnaissance: passive OSINT, public artifact/API-leak indicators, security headers, CORS/configuration review, and repository secret/config checks. Evidence is redacted; secrets are never used or validated. GitHub scans support public repositories by default and explicit authorized access via server-side token configuration.
+- Vulnerability-heavy dependency analysis: exact and locked npm/PyPI dependencies from `package.json`, `package-lock.json`, `requirements.txt`, `pyproject.toml`, `poetry.lock`, and `uv.lock`. OSV advisories are hydrated with CVE aliases, affected/fixed versions, and severity. Optional `CVE_MCP_URL` integrates `mukul975/cve-mcp-server` for dependency scans, EPSS probability/percentile, and CISA KEV checks. Each finding links its source manifest, full advisory, intelligence evidence, and RCA remediation targets. Advisory matches are not claims of application exploitability.
 - External-target safety: HTTP(S)-only, credential rejection, DNS/IP/private/metadata/link-local blocking, redirect and subresource checks, and best-effort Recon failure isolation. Authorized local fixture remains supported. Guard DNS checks are application-layer controls; Chromium performs its own resolution, so DNS-rebinding races are not fully eliminated. Do not treat this as a network egress sandbox.
 - Autonomous Target Console: enter target + objective + constraints, then **Run agent** starts the complete typed-tool workflow without a second execute button. Tool plan is collapsed by default.
 - Chat-driven run creation and read-only investigation mode.
@@ -48,6 +49,18 @@ pnpm dev
 ```
 
 Open `http://localhost:7258`; the fixture runs at `http://localhost:3100`. Patched verification previews use separately allocated ports. See `USING_TRUSTPATCH.md` for the user workflow and `DEPLOYMENT.md` for production build, single-VM process, reverse-proxy, backup, and bulk-audit authorization instructions.
+
+### Optional CVE MCP intelligence
+
+OSV dependency matching works without a local provider. To add live CVE MCP, EPSS, and CISA KEV evidence:
+
+```bash
+git clone --depth 1 https://github.com/mukul975/cve-mcp-server.git .data/tools/cve-mcp-server
+uv venv .data/tools/cve-mcp-server/.venv --python 3.12
+uv pip install --python .data/tools/cve-mcp-server/.venv/Scripts/python.exe .data/tools/cve-mcp-server 'mcp[cli]>=1.7,<2'
+```
+
+The upstream server currently requires MCP SDK 1.x; unbounded installation selects incompatible 2.x. Start it on loopback with `MCP_TRANSPORT=http`, `HOST=127.0.0.1`, `PORT=8000`, then set `CVE_MCP_URL=http://127.0.0.1:8000/mcp` in `.env`. Keep NVD/GitHub keys only in the provider's server-side environment. Repository inspection covers up to 80 eligible text files, 500 KB each, on the default branch. Exact and lockfile-resolved versions are analyzed; unresolved ranges are not guessed or reported as installed packages.
 
 The default `AGENT_MODE=fixture` is deliberately deterministic and labeled in the UI. It is not represented as Meta-model output. The Meta Responses API integration is **implemented but not exercised end-to-end** because no API credential is available in this environment. To enable it for verification, set `AGENT_MODE=meta`, `MODEL_API_KEY`, and optionally `MODEL_ID` / `MODEL_API_URL` in the root `.env`.
 

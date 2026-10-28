@@ -11,12 +11,12 @@ export type RunStatus = z.infer<typeof runStatusSchema>;
 export const findingKindSchema = z.enum([
   "noindex", "canonical", "security_header", "seo_metadata", "seo_social",
   "seo_structure", "seo_schema", "seo_content", "seo_links", "seo_crawl", "seo_answer",
-  "api_leak", "security_misconfiguration", "exposed_artifact", "repo_secret", "repo_config"
+  "api_leak", "security_misconfiguration", "exposed_artifact", "repo_secret", "repo_config", "dependency_vulnerability"
 ]);
 export type FindingKind = z.infer<typeof findingKindSchema>;
 export const findingStateSchema = z.enum(["observed", "verified", "approved", "repaired", "validated", "blocked", "out_of_scope"]);
 export const scopeSchema = z.object({
-  includeChecks: z.array(findingKindSchema).default(["noindex", "canonical", "security_header", "seo_metadata", "seo_social", "seo_structure", "seo_schema", "seo_content", "seo_links", "seo_crawl", "seo_answer", "api_leak", "security_misconfiguration", "exposed_artifact", "repo_secret", "repo_config"]),
+  includeChecks: z.array(findingKindSchema).default(["noindex", "canonical", "security_header", "seo_metadata", "seo_social", "seo_structure", "seo_schema", "seo_content", "seo_links", "seo_crawl", "seo_answer", "api_leak", "security_misconfiguration", "exposed_artifact", "repo_secret", "repo_config", "dependency_vulnerability"]),
   excludeChecks: z.array(findingKindSchema).default([]),
   includePaths: z.array(z.string()).default([]),
   excludePaths: z.array(z.string()).default([]),
