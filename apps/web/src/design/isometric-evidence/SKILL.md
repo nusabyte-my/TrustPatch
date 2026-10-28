@@ -32,4 +32,4 @@ Map states mechanically:
 
 ## Reuse
 
-Use the same stage contract for landing stories, empty states, or agent progress. Do not add isometric decoration to forms, evidence readers, or dense work areas where it competes with task completion.
+Use the same stage contract for landing stories, empty states, or agent progress. A landing environment may place specialist workstations around a central evidence core, but it must remain behind content, pointer-inert, decorative to assistive technology, and controlled by the same stage/pause state as the evidence player. Do not add isometric decoration to forms, evidence readers, or dense work areas where it competes with task completion.
