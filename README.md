@@ -21,6 +21,7 @@ Local hackathon implementation for the Meta Global AI Developer Hackathon, Start
 - Independent patched-worktree build and preview verification.
 - Read-only, `noindex`, canonical, and `X-Content-Type-Options` workflows.
 - Live Mend activity stream: queued inspection, per-URL checks, vulnerability alerts, approval requests, patch attempts, failed verification, and completion states.
+- Red/Blue SEO operations: selectable mission mode challenges indexability, crawl policy, metadata, schema, content, internal links, and AI-answer readiness, then produces bounded optimization actions and verification targets. Evidence is stored as a Red/Blue ledger; no ranking, citation, traffic, or automatic rewrite claims.
 - SEO/AEO/GEO analysis: metadata, social previews, semantic structure, JSON-LD, content depth, internal links, answer extractability, robots, and sitemap discovery.
 - Scoped bulk authorized-site auditing with passive checks, per-site progress, and failure isolation. Verified by creating and completing an authorized `prodigylearning.my` audit with 3 findings; evidence navigation opens the stored run.
 - Findings, approval card, diff viewer, and Proof Receipt UI.

@@ -9,6 +9,7 @@ export * from "./model";
 export * from "./repair";
 export * from "./preview";
 export * from "./seo";
+export * from "./seo-operations";
 export * from "./bulk";
 export * from "./bulk-store";
 export * from "./target-console";

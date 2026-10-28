@@ -2,7 +2,7 @@ import { resolve } from "node:path";
 
 import {
   addEvent, applyRepairPlan, createDatabase, getContract, getEvents, getFindings, getRunView,
-  inspectSite, enrichWithRea, mapRepository, migrateDatabase, planRepairs, plannerName, requestApproval,
+  inspectSite, enrichWithRea, mapRepository, migrateDatabase, planRepairs, plannerName, requestApproval, runSeoOperations,
   saveFindings, saveProof, setStatus, startPatchedPreview, updateFindingStates, verifyRepair,
   ProviderError, type TrustpatchDb
 } from "@trustpatch/core";
@@ -43,6 +43,7 @@ export async function executeRun(store: TrustpatchDb, runId: string): Promise<Ru
         sourceFiles: finding.kind === "security_header" ? ["next.config.ts"] : finding.kind === "noindex" ? ["app/services/page.tsx", "app/layout.tsx"] : ["app/services/page.tsx"]
       }));
       saveFindings(store, withSources);
+      if (contract.seoMode === "red_blue") runSeoOperations(store, runId, withSources);
       proof.findings = withSources;
       addEvent(store, runId, "inspector", "activity", withSources.length ? `Inspection complete: ${withSources.length} confirmed issue${withSources.length === 1 ? "" : "s"} need review. No code has been changed.` : "Inspection complete: no selected defects found. No code has been changed.", { activity: "inspection", status: withSources.length ? "warning" : "success", count: withSources.length, repositoryEvidenceId: mapped.evidenceId });
       if (contract.readOnly) {

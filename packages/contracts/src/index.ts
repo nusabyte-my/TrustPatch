@@ -29,6 +29,7 @@ export const runContractSchema = z.object({
   repositoryPath: z.string().min(1),
   baseBranch: z.string().default("main"),
   readOnly: z.boolean().default(false),
+  seoMode: z.enum(["standard", "red_blue"]).default("standard"),
   authorizedLocalFixture: z.boolean().default(false),
   scope: scopeSchema,
   createPr: z.boolean().default(false),
@@ -43,6 +44,7 @@ export const createRunSchema = z.object({
   repositoryPath: z.string().optional(),
   scope: scopeSchema.partial().optional(),
   readOnly: z.boolean().optional(),
+  seoMode: z.enum(["standard", "red_blue"]).default("standard").optional(),
   ownershipConfirmed: z.literal(true),
   createPr: z.boolean().optional()
 });
