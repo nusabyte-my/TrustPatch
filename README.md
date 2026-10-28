@@ -4,7 +4,7 @@
 
 TrustPatch is a supervised-autonomous repair agent for websites. It inspects real pages and repositories, preserves reproducible evidence, proposes narrowly scoped repairs, and verifies the patched application before calling anything fixed.
 
-Built by **[NusaByte](https://nusabyte.my)** for the **Meta Global AI Developer Hackathon** — **Startup track · Build for Your World**.
+Built by **Shaidan Shaari ([NusaByte](https://nusabyte.my))** for the **Meta Global AI Developer Hackathon** — **Startup track · Build for Your World**.
 
 | | |
 |---|---|
