@@ -8,7 +8,7 @@ Built by **[NusaByte](https://nusabyte.my)** for the **Meta Global AI Developer 
 
 | | |
 |---|---|
-| **Live application** | [trustpatch.nusabyte.my](https://trustpatch.nusabyte.my) |
+| **Live application** | [trustpatch.72.62.254.65.sslip.io](https://trustpatch.72.62.254.65.sslip.io) |
 | **Repository** | [github.com/nusabyte-my/TrustPatch](https://github.com/nusabyte-my/TrustPatch) |
 | **Primary agent** | Mend, coordinating Inspector, Mapper, Recon, SEO, Repair, and Verifier |
 | **Current repair target** | Explicitly authorized local Next.js fixture |
@@ -229,7 +229,7 @@ pnpm start:worker    # separate persistent process
 
 Keep `.data/`, `artifacts/`, and unfinished worktree state persistent. Terminate TLS at Nginx/Caddy and proxy only the web port. Do not expose fixture or patched-preview ports.
 
-The hackathon demo is deployed at **https://trustpatch.nusabyte.my**. It has no public authentication or tenant isolation; treat it as a demonstration, not a multi-tenant production service.
+The hackathon demo is deployed at **https://trustpatch.72.62.254.65.sslip.io** on an existing Hostinger Ubuntu VPS. Dedicated `trustpatch-web` and `trustpatch-worker` systemd services run as an unprivileged `trustpatch` account; Nginx terminates a Let's Encrypt HTTPS certificate and proxies to `127.0.0.1:7258`. The custom `trustpatch.nusabyte.my` hostname requires Cloudflare DNS edit access; the connected credential was read-only, so the working `sslip.io` hostname is published instead. The demo has no public authentication or tenant isolation; treat it as a demonstration, not a multi-tenant production service.
 
 See [DEPLOYMENT.md](DEPLOYMENT.md) for service management, reverse proxy, backups, and production hardening.
 
