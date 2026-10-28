@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "exports": { ".": "./src/index.ts", "./db": "./src/db.ts", "./migrations/*": "./migrations/*" },
+  "exports": { ".": "./src/index.ts", "./db": "./src/db.ts", "./seo-playbooks": "./src/seo-playbooks.ts", "./migrations/*": "./migrations/*" },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",

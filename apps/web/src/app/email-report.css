@@ -1,0 +1,10 @@
+.email-report { display:grid; gap:18px; }
+.email-report>.decision-label+p { margin:0; padding:18px; background:#edf2fa; border-left:3px solid var(--cobalt); color:var(--ink); font-size:13px; line-height:1.7; }
+.email-report form { display:grid; gap:14px; }
+.email-report input[type=email] { display:block; width:100%; min-height:44px; margin-top:7px; padding:10px 12px; border:1px solid var(--line); border-radius:7px; background:#fbfcfa; color:var(--ink); }
+.email-confirm { display:flex; align-items:start; gap:9px; color:var(--muted); font-size:12px; line-height:1.5; font-family:var(--font-body); font-weight:400; }
+.email-confirm input { width:18px; height:18px; flex:none; margin-top:1px; accent-color:var(--cobalt); }
+.email-result { display:grid; gap:12px; padding:18px; border:1px solid #b8d6c5; border-radius:9px; background:#e7f2eb; }
+.email-result strong { color:var(--verified); font-size:13px; }
+.email-result p { margin:0; color:var(--ink); font-size:12px; line-height:1.65; }
+.email-result a { color:var(--cobalt); font-size:12px; font-weight:600; }

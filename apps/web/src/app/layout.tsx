@@ -12,6 +12,7 @@ import "./mission.css";
 import "./workflow.css";
 import "./seo-operations.css";
 import "./review-modal.css";
+import "./email-report.css";
 import "./theme.css";
 
 export const metadata: Metadata = { title: "TrustPatch — Watch a real repair happen", description: "Give Mend a website target. Inspect evidence, approve an isolated repair, and verify the result." };

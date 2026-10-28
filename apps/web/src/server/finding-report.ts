@@ -1,5 +1,6 @@
 import { PDFDocument, StandardFonts, rgb, type PDFFont } from "pdf-lib";
-import { buildSeoOperations, readEvidence, type SeoOperation } from "@trustpatch/core";
+import { readEvidence, type SeoOperation } from "@trustpatch/core";
+import { buildSeoOperations } from "@trustpatch/core/seo-playbooks";
 import type { Finding, RunView } from "@trustpatch/contracts";
 import { store } from "./runtime";
 
