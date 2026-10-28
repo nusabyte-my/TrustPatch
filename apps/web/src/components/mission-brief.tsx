@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { ArrowLeft, ArrowRight, Check, LockKeyhole, Sparkles } from "lucide-react";
 import type { CreateRunInput, FindingKind } from "@trustpatch/contracts";
 
+
 interface Props { busy: boolean; onExecute: (input: CreateRunInput) => Promise<void> }
 const goals = [
   { id: "traffic", title: "Get more search traffic", detail: "Indexing, canonical targets, and search readiness", objective: "Improve search discovery and remove technical indexing barriers" },
