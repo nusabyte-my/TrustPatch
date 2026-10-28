@@ -25,6 +25,7 @@
     "@types/node": "^22.0.0",
     "@types/react": "latest",
     "@types/react-dom": "latest",
-    "typescript": "^5.9.0"
+    "typescript": "^5.9.0",
+    "vitest": "^3.0.0"
   }
 }

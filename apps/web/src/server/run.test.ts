@@ -7,7 +7,7 @@ import { createAndExecuteRun } from "./run";
 import { store } from "./runtime";
 
 vi.mock("@trustpatch/core", async (importOriginal) => {
-  const actual = await importOriginal<typeof Core>();
+  const actual = await importOriginal() as typeof Core;
   return { ...actual, assertResolvablePublicTarget: vi.fn(async (value: string) => new URL(value)) };
 });
 const paths: string[] = [];
