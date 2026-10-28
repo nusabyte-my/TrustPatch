@@ -15,16 +15,18 @@ export async function createAndExecuteRun(input: CreateRunInput) {
     objective: parsed.objective,
     targetUrl: parsed.targetUrl ?? targetPlan.targetUrl,
     productionOrigin: parsed.productionOrigin ?? new URL(targetPlan.targetUrl).origin,
-    repositoryPath: parsed.repositoryPath ? resolve(parsed.repositoryPath) : targetPlan.repairRequested ? trustpatchPaths().fixturePath : `audit://${new URL(targetPlan.targetUrl).hostname}`,
+    repositoryPath: parsed.repositoryPath ? resolve(parsed.repositoryPath) : parsed.readOnly === false ? trustpatchPaths().fixturePath : `audit://${new URL(targetPlan.targetUrl).hostname}`,
     baseBranch: "main",
     createPr: parsed.createPr ?? !/stop before.*pr|don.?t open.*pr/i.test(parsed.objective),
     scope: {
       includePaths: ["/", "/services"],
       allowedFiles: ["app/layout.tsx", "app/page.tsx", "app/services/page.tsx", "next.config.ts"],
-      ...inferred
+      ...inferred,
+      ...parsed.scope
     }
   });
-  contract.readOnly = targetPlan.readOnly;
+  contract.readOnly = parsed.readOnly ?? targetPlan.readOnly;
+  if (!contract.readOnly && !contract.scope.allowedFiles.length) contract.scope.allowedFiles = ["app/layout.tsx", "app/page.tsx", "app/services/page.tsx", "next.config.ts"];
   if (!parsed.repositoryPath) {
     const local = new URL(contract.targetUrl);
     if (!["127.0.0.1", "localhost"].includes(local.hostname)) {
@@ -34,7 +36,7 @@ export async function createAndExecuteRun(input: CreateRunInput) {
       if (contract.repositoryPath.startsWith("audit://")) contract.repositoryPath = trustpatchPaths().fixturePath;
     }
   }
-  if (!contract.authorizedLocalFixture && targetPlan.repairRequested) throw new Error("Code repair is limited to the authorized local fixture; remote targets require read-only analysis");
+  if (!contract.authorizedLocalFixture && !contract.readOnly) throw new Error("Code repair is limited to the authorized local fixture; remote targets require read-only analysis");
   await assertResolvablePublicTarget(contract.targetUrl, contract.authorizedLocalFixture);
   await assertResolvablePublicTarget(contract.productionOrigin, contract.authorizedLocalFixture);
   if (contract.authorizedLocalFixture && !existsSync(contract.repositoryPath)) throw new Error(`Authorized repository not found: ${contract.repositoryPath}`);

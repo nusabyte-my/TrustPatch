@@ -7,7 +7,8 @@ Local hackathon implementation for the Meta Global AI Developer Hackathon, Start
 ## Implemented surface
 
 - Evidence-led landing: real latest completed local run, first-failure recovery, verification checks, and a direct link to the actual Proof Receipt. Fixture planner and target are labeled; no customer or production-performance claims.
-- Interactive Agent Command Center: seven selectable roles, live specialist activity, compact approval/Proof panel, and on-demand evidence/diff/activity drawer. Mapper emits real repository and worktree mapping events.
+- Guided client mission: goal templates, target/authorization, structured read-only or local-repair authority, page/check selection, live mission summary, and evidence-driven recommendations.
+- Interactive Agent Command Center: seven selectable roles with introductions, client/technical language, live workflow shimmer and real execution trace, compact approval/Proof panel, and on-demand evidence/diff/activity drawer. Mapper emits real repository and worktree mapping events.
 - Reactive Recon: bounded Playwright console/page-error/failed-request/resource diagnostics on every target. Optional REA passive page + static bundle evidence via `REA_MCP_URL` and `REA_CDP_URL`; no REA claim when not configured.
 - External-target safety: HTTP(S)-only, credential rejection, DNS/IP/private/metadata/link-local blocking, redirect and subresource checks, and best-effort Recon failure isolation. Authorized local fixture remains supported. Guard DNS checks are application-layer controls; Chromium performs its own resolution, so DNS-rebinding races are not fully eliminated. Do not treat this as a network egress sandbox.
 - Autonomous Target Console: enter target + objective + constraints, then **Run agent** starts the complete typed-tool workflow without a second execute button. Tool plan is collapsed by default.

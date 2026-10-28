@@ -42,6 +42,8 @@ export const createRunSchema = z.object({
   productionOrigin: z.string().url().optional(),
   repositoryPath: z.string().optional(),
   scope: scopeSchema.partial().optional(),
+  readOnly: z.boolean().optional(),
+  ownershipConfirmed: z.literal(true),
   createPr: z.boolean().optional()
 });
 export type CreateRunInput = z.infer<typeof createRunSchema>;

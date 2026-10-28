@@ -1,16 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import type { RunEvent, RunView } from "@trustpatch/contracts";
+import type { CreateRunInput, RunEvent, RunView } from "@trustpatch/contracts";
 import { BulkAudit } from "./bulk-audit";
-import { TargetConsole } from "./target-console";
+import { MissionBrief } from "./mission-brief";
 import { AgentCommand } from "./agent-command";
 
-const starter = "Inspect the staging site. Fix confirmed indexing and security-header defects, but do not touch /blog. Stop before opening a PR.";
 const terminal = new Set(["validated", "blocked", "cancelled"]);
 
 export function Workbench() {
-  const [objective, setObjective] = useState(starter);
   const [message, setMessage] = useState("");
   const [run, setRun] = useState<RunView | null>(null);
   const [events, setEvents] = useState<RunEvent[]>([]);
@@ -42,10 +40,10 @@ export function Workbench() {
     const timer = setInterval(() => { void refresh(run.id).catch(() => undefined); }, 1500);
     return () => clearInterval(timer);
   }, [run, refresh]);
-  async function startRun(nextObjective = objective) {
+  async function startRun(input: CreateRunInput) {
     setBusy(true); setError("");
     try {
-      const response = await fetch("/api/runs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ objective: nextObjective }) });
+      const response = await fetch("/api/runs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(input) });
       const data = await response.json() as { run?: RunView; error?: string };
       if (!response.ok || !data.run) throw new Error(data.error ?? "Run failed");
       setRun(data.run); await refresh(data.run.id);
@@ -77,7 +75,8 @@ export function Workbench() {
   async function cancel() { if (!run) return; await fetch(`/api/runs/${run.id}/cancel`, { method: "POST" }); await refresh(run.id); }
   return <>
     <main id="main" className="workbench agent-workbench">
-      <TargetConsole onExecute={startRun} />
+      {!run && <MissionBrief busy={busy} onExecute={startRun} />}
+      {run && <button className="new-mission-button" type="button" onClick={() => { setRun(null); setEvents([]); window.history.replaceState(null, "", window.location.pathname); }}>Start a new mission</button>}
       {!run && <BulkAudit />}
       {error && <div className="error" role="alert">{error}</div>}
       {run ? <AgentCommand run={run} events={events} busy={busy} message={message} onMessage={setMessage} onApprove={approve} onFollowUp={followUp} onCancel={cancel} /> : <section className="agent-empty"><div><p className="kicker">Seven roles. One controlled run.</p><h2>Choose the target.<br />Direct the team.</h2></div><div className="agent-empty-roles"><span>Mend coordinates</span><span>Inspector + Mapper investigate</span><span>SEO analyzes extraction</span><span>Recon observes reactive browser behavior</span><span>Repair patches approved files</span><span>Verifier proves the result</span></div></section>}

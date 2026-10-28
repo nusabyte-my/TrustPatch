@@ -48,6 +48,7 @@ export function requestApproval(store: TrustpatchDb, runId: string, scope: Scope
   if (found.some((f) => f.kind === "canonical")) required.add("app/services/page.tsx");
   if (found.some((f) => f.kind === "security_header")) required.add("next.config.ts");
   const allowedFiles = [...required].filter((file) => scope.allowedFiles.includes(file));
+  if (!allowedFiles.length) throw new Error("Repair scope has no authorized files. Select at least one permitted repository file before requesting approval.");
   const base = { findingIds: found.map((f) => f.id), allowedFiles, createPr };
   const approval: Approval = { ...base, scopeDigest: approvalDigest(base) };
   store.db.update(store.runs).set({ approvalJson: JSON.stringify(approval), approvalDigest: approval.scopeDigest, approvalGranted: 0, updatedAt: now() }).where(eq(store.runs.id, runId)).run();

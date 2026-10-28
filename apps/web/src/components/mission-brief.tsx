@@ -1,0 +1,51 @@
+"use client";
+
+import { useState, type FormEvent } from "react";
+import { ArrowLeft, ArrowRight, Check, LockKeyhole, Sparkles } from "lucide-react";
+import type { CreateRunInput, FindingKind } from "@trustpatch/contracts";
+
+interface Props { busy: boolean; onExecute: (input: CreateRunInput) => Promise<void> }
+const goals = [
+  { id: "traffic", title: "Get more search traffic", detail: "Indexing, canonical targets, and search readiness", objective: "Improve search discovery and remove technical indexing barriers" },
+  { id: "trust", title: "Fix security and trust issues", detail: "Passive response-policy and browser diagnostics", objective: "Identify security-header and runtime trust issues without exploiting the site" },
+  { id: "ai", title: "Make the site easier for AI to understand", detail: "Structured data, answers, and crawler access", objective: "Improve accurate AI extraction and answer readiness" },
+  { id: "problem", title: "Investigate a technical problem", detail: "Reactive errors, failed requests, and page evidence", objective: "Investigate the reported technical issue and preserve reproducible evidence" },
+  { id: "audit", title: "Prepare a client-ready website audit", detail: "Evidence, business context, and next actions", objective: "Prepare an evidence-backed client website audit" }
+];
+const checks: Array<{ kind: FindingKind; label: string }> = [
+  { kind: "noindex", label: "Indexing" }, { kind: "canonical", label: "Canonical URLs" }, { kind: "security_header", label: "Security headers" },
+  { kind: "seo_metadata", label: "Metadata" }, { kind: "seo_social", label: "Social previews" }, { kind: "seo_structure", label: "Page structure" },
+  { kind: "seo_schema", label: "Structured data" }, { kind: "seo_content", label: "Content depth" }, { kind: "seo_links", label: "Internal links" },
+  { kind: "seo_crawl", label: "Crawler policy" }, { kind: "seo_answer", label: "AI answer readiness" }
+];
+export function MissionBrief({ busy, onExecute }: Props) {
+  const [step, setStep] = useState(0);
+  const [goal, setGoal] = useState("traffic");
+  const [target, setTarget] = useState("http://127.0.0.1:3100");
+  const [authorized, setAuthorized] = useState(false);
+  const [readOnly, setReadOnly] = useState(true);
+  const [paths, setPaths] = useState(["/", "/services"]);
+  const [selectedChecks, setSelectedChecks] = useState<FindingKind[]>(checks.map((check) => check.kind));
+  const [notes, setNotes] = useState("");
+  const [error, setError] = useState("");
+  const selectedGoal = goals.find((item) => item.id === goal)!;
+  const isLocal = (() => { try { return ["localhost", "127.0.0.1"].includes(new URL(target).hostname); } catch { return false; } })();
+  const mission = `${selectedGoal.objective} for ${target}. ${notes.trim() || "Prioritize reproducible evidence and the smallest safe next action."}`;
+  function chooseGoal(id: string) { setGoal(id); setStep(1); }
+  function togglePath(path: string) { setPaths((current) => current.includes(path) ? current.filter((item) => item !== path) : [...current, path]); }
+  function toggleCheck(kind: FindingKind) { setSelectedChecks((current) => current.includes(kind) ? current.filter((item) => item !== kind) : [...current, kind]); }
+  async function submit(event: FormEvent) {
+    event.preventDefault(); setError("");
+    if (!authorized) { setError("Confirm that you own the target or have permission to inspect it."); return; }
+    if (!paths.length || !selectedChecks.length) { setError("Keep at least one page and one inspection check selected."); return; }
+    try { await onExecute({ objective: mission, targetUrl: target, readOnly, ownershipConfirmed: true, createPr: false, scope: { includePaths: paths, includeChecks: selectedChecks, ...(!readOnly ? { allowedFiles: ["app/layout.tsx", "app/page.tsx", "app/services/page.tsx", "next.config.ts"] } : {}) } }); }
+    catch (reason) { setError(reason instanceof Error ? reason.message : "Mission could not start"); }
+  }
+  return <section className="mission-brief" aria-labelledby="mission-title"><div className="mission-conversation"><div className="mission-greeting"><span className="mend-avatar"><Sparkles size={19} aria-hidden="true" /></span><div><p className="mission-speaker">Mend · your repair coordinator</p><h2 id="mission-title">Hi. What would you like to improve?</h2><p>I’ll coordinate the right specialists, keep the work inside your scope, and show you the evidence before anything changes.</p></div></div><div className="mission-progress" aria-label={`Mission setup step ${step + 1} of 4`}>{["Goal", "Target", "Scope", "Confirm"].map((label, index) => <button type="button" key={label} className={step === index ? "active" : step > index ? "complete" : ""} onClick={() => { if (index <= step) setStep(index); }} disabled={index > step} aria-current={step === index ? "step" : undefined}><span>{step > index ? <Check size={12} aria-hidden="true" /> : index + 1}</span>{label}</button>)}</div>
+    {step === 0 && <div className="mission-goals">{goals.map((item) => <button type="button" key={item.id} onClick={() => chooseGoal(item.id)}><strong>{item.title}</strong><span>{item.detail}</span><ArrowRight size={17} aria-hidden="true" /></button>)}</div>}
+    {step === 1 && <div className="mission-step"><p className="mission-question">Which website are we working on?</p><label htmlFor="mission-target">Authorized website URL<input id="mission-target" type="url" value={target} onChange={(event) => setTarget(event.target.value)} required /></label><label className="mission-authority"><input type="checkbox" checked={authorized} onChange={(event) => setAuthorized(event.target.checked)} /><span>I own this site or have explicit permission to inspect it.</span></label><p className="mission-note">External targets are read-only. Repairs require the authorized local repository; no ownership claim is treated as proof.</p><div className="mission-authority-choice"><button type="button" className={readOnly ? "selected" : ""} onClick={() => setReadOnly(true)}><strong>Inspect only</strong><span>No files changed</span></button><button type="button" className={!readOnly ? "selected" : ""} disabled={!isLocal} onClick={() => setReadOnly(false)} title={!isLocal ? "External targets are read-only" : "Repair the authorized fixture"}><strong>Prepare a repair</strong><span>{isLocal ? "Approval required" : "Local repository only"}</span></button></div></div>}
+    {step === 2 && <div className="mission-step"><p className="mission-question">Where should the team focus?</p><span className="mission-field-label">Pages in scope</span><div className="mission-chips">{["/", "/services", "/blog", "/about", "/contact"].map((path) => <button type="button" key={path} className={paths.includes(path) ? "selected" : ""} onClick={() => togglePath(path)} aria-pressed={paths.includes(path)}>{path}</button>)}</div><span className="mission-field-label">Inspection checks</span><div className="mission-chips">{checks.map((check) => <button type="button" key={check.kind} className={selectedChecks.includes(check.kind) ? "selected" : ""} onClick={() => toggleCheck(check.kind)} aria-pressed={selectedChecks.includes(check.kind)}>{check.label}</button>)}</div><label htmlFor="mission-notes">Anything specific Mend should know? (optional)<textarea id="mission-notes" rows={2} value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Example: Focus on lead generation. Do not touch the blog." /></label></div>}
+    {step === 3 && <form className="mission-step" onSubmit={submit}><p className="mission-question">Here’s the mission I understood.</p><div className="mission-review"><div><span>Goal</span><strong>{selectedGoal.title}</strong></div><div><span>Authority</span><strong>{readOnly ? "Read-only inspection" : "Approval-gated local repair"}</strong></div><div><span>Pages</span><strong>{paths.join(", ")}</strong></div><div><span>Checks</span><strong>{selectedChecks.length} selected</strong></div></div><p className="mission-note">Seven specialists will inspect only the approved target and paths. No merge or deployment is permitted.</p>{error && <p className="error" role="alert">{error}</p>}<button className="mission-start" type="submit" disabled={busy}>{busy ? <><span className="mission-spinner" /> Starting your team…</> : <>Confirm mission and inspect site <ArrowRight size={18} aria-hidden="true" /></>}</button></form>}
+    {step > 0 && step < 3 && <div className="mission-navigation"><button type="button" onClick={() => setStep(step - 1)}><ArrowLeft size={16} aria-hidden="true" /> Back</button><button type="button" className="mission-next" disabled={step === 1 && !authorized} onClick={() => setStep(step + 1)}>Continue <ArrowRight size={16} aria-hidden="true" /></button></div>}
+  </div><aside className="mission-live"><div className="mission-live-heading"><LockKeyhole size={17} aria-hidden="true" /><span>Live mission brief</span></div><dl><div><dt>Objective</dt><dd>{selectedGoal.title}</dd></div><div><dt>Target</dt><dd>{target || "Not set"}</dd></div><div><dt>Scope</dt><dd>{paths.length} pages · {selectedChecks.length} checks</dd></div><div><dt>Authority</dt><dd>{readOnly ? "Inspect only" : "Repair after approval"}</dd></div></dl><div className="mission-team"><span>Your specialist team</span><p><strong>Recon + Inspector</strong> observe the real browser.</p><p><strong>SEO + Mapper</strong> connect findings to opportunities and files.</p><p><strong>Repair + Verifier</strong> act only after your approval.</p></div><div className="mission-suggestion"><Sparkles size={15} aria-hidden="true" /><p>{goal === "traffic" ? "Suggested: start with indexing, canonical URLs, and metadata. Content changes stay reviewable." : goal === "trust" ? "Suggested: keep this read-only. Recon will preserve runtime evidence without exploit attempts." : goal === "ai" ? "Suggested: include structured data, crawler policy, and answer readiness." : goal === "problem" ? "Suggested: describe what users experience in the notes so the evidence has a clear question to answer." : "Suggested: use read-only mode and turn the verified findings into a client handoff."}</p></div></aside></section>;
+}
