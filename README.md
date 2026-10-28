@@ -79,7 +79,9 @@ flowchart LR
 
 Optional integrations:
 
-- **Meta Responses API** for repair planning with `AGENT_MODE=meta`.
+- **Muse / LLM planning** with `AGENT_MODE=meta` for the official Meta Responses API or `AGENT_MODE=llm` with an explicitly configured OpenAI-compatible provider. Structured tool output is schema-validated; receipts identify `meta-model`, `llm-model`, or `fixture-planner` separately.
+- **JEBAT MCP ecosystem** through a server-side allowlist of 14 research, SEO, advisor, and passive security tools. SEO/advisor evidence is stored with its limitations. No shell, filesystem, credential, deployment, or external mutation tools are exposed to browser users.
+- **Provider health** at `/api/integrations` and in the landing-page status panel. Configured, available, and blocked are distinct states; credentials are never returned.
 - **CVE MCP** for dependency scan, EPSS, and CISA KEV enrichment. OSV works independently.
 - **GitHub REST API** for authorized public-repository inspection and optional draft-PR publication.
 - **REA MCP** for passive browser/static-bundle evidence when configured.
@@ -185,15 +187,29 @@ MCP_TRANSPORT=http HOST=127.0.0.1 PORT=8000 ./.venv/Scripts/python.exe -m cve_mc
 
 Set `CVE_MCP_URL=http://127.0.0.1:8000/mcp` in `.env`. On POSIX, use `.venv/bin/python`. Keep provider credentials only in its server-side environment.
 
+### JEBAT MCP setup
+
+Run JEBAT on loopback with a strict tool allowlist. TrustPatch independently enforces the same allowlist before every tool call.
+
+```bash
+# From the JEBAT workspace
+JEBAT_MCP_TOOLS_ALLOW='advisor_classify,advisor_decide,advisor_gate,advisor_score,advisor_verify,search_web,web_extract,seo_audit,seo_keyword_extract,seo_content_brief,seo_meta_generate,pentest_header_check,pentest_ssl_check,pentest_cve_search' \
+  python -m jebat_cli_new mcp serve --transport http --host 127.0.0.1 --port 18789
+```
+
+Set `JEBAT_MCP_URL=http://127.0.0.1:18789/message` and optionally `JEBAT_MCP_API_KEY`. For production, run the provider beside the worker with a unique API key. Only public targets receive JEBAT passive header checks. REA remains optional and requires both `REA_MCP_URL` and `REA_CDP_URL`; its absence is reported rather than simulated.
+
 ## Configuration
 
 All configuration is server-side. Never put secrets in `NEXT_PUBLIC_*` variables or commit `.env`.
 
 | Variable | Purpose |
 |---|---|
-| `AGENT_MODE` | `fixture` for deterministic offline planning; `meta` for the Meta adapter |
-| `MODEL_API_KEY` | Meta API credential, required only for `meta` mode |
-| `MODEL_API_URL`, `MODEL_ID` | Meta endpoint/model overrides |
+| `AGENT_MODE` | `fixture` for deterministic offline planning, `meta` for official Muse, or `llm` for a configured OpenAI-compatible provider |
+| `MODEL_API_KEY` | Server-side model credential for `meta` or `llm` mode |
+| `MODEL_API_URL`, `MODEL_ID` | Provider endpoint/model overrides |
+| `MODEL_API_PROTOCOL` | `responses` for official Muse; `chat_completions` for compatible providers |
+| `JEBAT_MCP_URL`, `JEBAT_MCP_API_KEY` | Scoped JEBAT MCP endpoint and optional bearer credential |
 | `TRUSTPATCH_DATABASE`, `TRUSTPATCH_ARTIFACTS` | Persistent SQLite and evidence paths |
 | `GITHUB_TOKEN` | Optional authorized repository access/draft-PR credential |
 | `CVE_MCP_URL` | Optional local CVE intelligence provider |
@@ -201,7 +217,7 @@ All configuration is server-side. Never put secrets in `NEXT_PUBLIC_*` variables
 | `RESEND_API_KEY`, `RESEND_FROM_EMAIL` | Optional real email delivery |
 | `FIXTURE_RECOVERY` | Enables the two-attempt recovery demonstration |
 
-**The Meta adapter is implemented but no Meta API credential has been available for live end-to-end verification.** Successful offline runs are labeled `fixture-planner`, never represented as Meta-model results. The same applies to GitHub draft-PR publication until exercised with an authorized repository.
+**Official Muse requires a valid Meta Model API credential.** The available third-party Muse-compatible credential returned HTTP 402, and other configured gateways did not offer Muse. The official adapter is therefore not claimed as verified. A real alternate-provider structured repair plan was exercised successfully; its subsequent full workflow paused on gateway HTTP 429/502 errors and is not claimed as a validated repair. Offline runs are labeled `fixture-planner`; alternate-provider receipts are labeled `llm-model`, never `meta-model`. GitHub draft-PR publication likewise requires an authorized repository and token.
 
 ## Verification
 

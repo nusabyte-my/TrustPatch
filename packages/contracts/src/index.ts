@@ -79,7 +79,7 @@ export const runEventSchema = z.object({
 export type RunEvent = z.infer<typeof runEventSchema>;
 export const proofReceiptSchema = z.object({
   status: runStatusSchema,
-  planner: z.enum(["fixture-planner", "meta-model"]),
+  planner: z.enum(["fixture-planner", "meta-model", "llm-model"]),
   findings: z.array(findingSchema),
   changedFiles: z.array(z.string()),
   branch: z.string().nullable(),
