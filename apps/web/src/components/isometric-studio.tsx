@@ -1,9 +1,8 @@
 import { useId } from "react";
 
 export function IsometricStudio({ stage, active }: { stage: number; active: boolean }) {
-  const id = useId();
-  const labels = ["Isometric website inspection with scanner and fault nodes", "Isometric approved files enclosed by a cobalt scope boundary", "Isometric repair blocks reconnecting along a cobalt path", "Isometric verification nodes connected by mint proof paths"];
-  return <svg className={`isometric-studio ${active ? "is-active" : ""}`} data-stage={stage} viewBox="0 0 520 250" role="img" aria-label={labels[stage] ?? labels[0]}>
+  const id = useId().replaceAll(":", "");
+  return <svg className={`isometric-studio ${active ? "is-active" : ""}`} data-stage={stage} viewBox="0 0 520 250" aria-hidden="true">
     <defs><linearGradient id={`${id}-plane`} x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#243442" /><stop offset="1" stopColor="#17242f" /></linearGradient><linearGradient id={`${id}-scan`} x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="#76a2ff" stopOpacity="0" /><stop offset=".5" stopColor="#76a2ff" stopOpacity=".7" /><stop offset="1" stopColor="#76a2ff" stopOpacity="0" /></linearGradient></defs>
     <g className="iso-plane"><path d="M55 166 263 54 459 164 250 236Z" fill={`url(#${id}-plane)`} stroke="#405362" /><path d="m55 166 195 70v14l-195-70Z" fill="#0c151d" /><path d="m250 236 209-72v14l-209 72Z" fill="#101c26" /><path d="m104 166 159-92 147 90-159 56Z" fill="none" stroke="#344856" strokeDasharray="3 6" /></g>
     <g className="iso-site"><path d="m177 118 86-47 91 49-88 48Z" fill="#2e4355" stroke="#547082" /><path d="m177 118 89 50v48l-89-49Z" fill="#192b39" /><path d="m266 168 88-48v48l-88 48Z" fill="#223747" /><path d="m194 122 68-37 73 37-69 37Z" fill="#375065" /><path d="m205 125 57-30 60 30-58 30Z" fill="#162631" /><path d="m217 126 44-23 47 23-45 23Z" fill="#29415a" /></g>
