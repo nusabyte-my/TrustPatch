@@ -1,6 +1,7 @@
 "use client";
 
-import { Sticker } from "../stickers/Sticker";
+import dynamic from "next/dynamic";
+const Sticker = dynamic(() => import("../stickers/Sticker").then((module) => module.Sticker), { ssr: false });
 import { brand } from "../stickers/fun";
 import { proofShield } from "../stickers/icons";
 
