@@ -55,6 +55,7 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,pre:focus-visible,in
 .workflow-title { background:none; color:#e3ecf2; animation:none; }
 .workflow-heading p:not(.workflow-title),.workflow-line { color:#a9b7c2; }
 .workflow-live-label,.workflow-role,.workflow-expand { color:#9db8f5; }
+.workflow-role { display:inline-flex; align-items:center; width:max-content; padding:1px 5px; border:1px solid #3f5675; border-radius:4px; color:#aec5fb; font-size:8px; line-height:1.4; }
 .workflow-pulse { background:#7ca4ff; animation-name:workflow-pulse-cobalt; }
 .workflow-trace { border-color:#506577; }
 .workflow-line.current { color:#e0e9ef; }

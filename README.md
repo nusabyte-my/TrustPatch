@@ -8,6 +8,7 @@ Local hackathon implementation for the Meta Global AI Developer Hackathon, Start
 
 - Evidence-led landing: real latest completed local run, first-failure recovery, verification checks, and a direct link to the actual Proof Receipt. Fixture planner and target are labeled; no customer or production-performance claims.
 - Unified visual system: chalk paper, ink evidence surfaces, cobalt actions, and mint verification across landing, mission, agent console, workflow, and drawers. Interactive React impact player uses actual run findings and checks with pause/restart/stage controls and reduced-motion support.
+- Isometric Evidence Studio (`apps/web/src/design/isometric-evidence/SKILL.md`): four interactive SVG scenes—scan, approved scope, patch, and proof—plus agent-name task tags in the live workflow.
 - Guided client mission: goal templates, target/authorization, structured read-only or local-repair authority, page/check selection, live mission summary, and evidence-driven recommendations.
 - Interactive Agent Command Center: seven selectable roles with introductions, client/technical language, live workflow shimmer and real execution trace, compact approval/Proof panel, and on-demand evidence/diff/activity drawer. Mapper emits real repository and worktree mapping events.
 - Reactive Recon: bounded Playwright console/page-error/failed-request/resource diagnostics on every target. Optional REA passive page + static bundle evidence via `REA_MCP_URL` and `REA_CDP_URL`; no REA claim when not configured.

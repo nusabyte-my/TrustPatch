@@ -1,0 +1,16 @@
+.isometric-studio { display:block; width:100%; height:140px; margin:-16px 0 2px; overflow:visible; }
+.iso-scope,.iso-patch-path,.iso-proof,.iso-proof-path { opacity:0; transition:opacity .35s ease-out; }
+.isometric-studio[data-stage="1"] .iso-scope { opacity:1; }
+.isometric-studio[data-stage="2"] .iso-file { animation:iso-connect .55s ease-out both; }
+.isometric-studio[data-stage="2"] .iso-patch-path { opacity:1; animation:iso-draw .7s ease-out both; }
+.isometric-studio[data-stage="3"] .iso-faults { opacity:.2; }
+.isometric-studio[data-stage="3"] .iso-proof,.isometric-studio[data-stage="3"] .iso-proof-path { opacity:1; transition-delay:.15s; }
+.isometric-studio[data-stage="3"] .iso-proof { animation:iso-settle .45s ease-out both; }
+.isometric-studio[data-stage="0"] .iso-scanner { animation:iso-scan 2.4s ease-in-out infinite; }
+.isometric-studio:not(.is-active) * { animation:none!important; }
+@keyframes iso-scan { 0%,100% { transform:translateX(-24px); opacity:.35; } 50% { transform:translateX(42px); opacity:1; } }
+@keyframes iso-connect { from { transform:translateY(8px); opacity:.55; } to { transform:translateY(0); opacity:1; } }
+@keyframes iso-draw { from { stroke-dashoffset:180; } to { stroke-dashoffset:0; } }
+@keyframes iso-settle { from { transform:translateY(-8px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+@media (max-width:480px) { .isometric-studio { height:120px; margin-top:-6px; } }
+@media (prefers-reduced-motion:reduce) { .isometric-studio * { animation:none!important; transition:none!important; } }
