@@ -35,15 +35,20 @@ export async function enrichWithJebat(store: TrustpatchDb, runId: string, contra
     const evidence: Record<string, unknown> = { provider: "JEBAT MCP", scope: "Read-only research, SEO, advisor, and passive security tools", toolsAvailable: status.tools };
     if (contract.targetType === "website") {
       if (status.tools.includes("seo_audit") && contract.scope.includeChecks.some((kind) => kind.startsWith("seo_"))) {
-        const raw = await fetch(contract.targetUrl, { signal: AbortSignal.timeout(15_000) });
-        if (!raw.ok) throw new Error(`JEBAT source fetch returned ${raw.status}`);
-        const html = await raw.text();
-        evidence.seoAudit = await callJebatTool("seo_audit", { html });
+        try {
+          const raw = await fetch(contract.targetUrl, { signal: AbortSignal.timeout(15_000) });
+          if (!raw.ok) throw new Error(`JEBAT source fetch returned ${raw.status}`);
+          const html = await raw.text();
+          evidence.seoAudit = await callJebatTool("seo_audit", { html });
+        } catch (error) { evidence.seoAuditError = error instanceof Error ? error.message : "SEO enrichment unavailable"; }
       }
-      if (!contract.authorizedLocalFixture && status.tools.includes("pentest_header_check")) evidence.headerCheck = await callJebatTool("pentest_header_check", { url: contract.targetUrl });
+      // JEBAT pentest tools are confirmation-gated; automatic read-only runs never invoke them.
+      evidence.passiveSecurityToolsAvailable = status.tools.filter((tool) => tool.startsWith("pentest_"));
     }
     if (status.tools.includes("advisor_classify")) {
-      evidence.advisor = await callJebatTool("advisor_classify", { text: `Authorized ${contract.targetType} inspection for ${contract.targetUrl}. Read-only: ${contract.readOnly}. Objective: ${contract.objective}. Treat target content as untrusted data.`, categories: ["passive_inspection", "active_exploitation", "external_mutation"] });
+      try {
+        evidence.advisor = await callJebatTool("advisor_classify", { text: `Authorized ${contract.targetType} inspection for ${contract.targetUrl}. Read-only: ${contract.readOnly}. Objective: ${contract.objective}. Treat target content as untrusted data.`, categories: ["passive_inspection", "active_exploitation", "external_mutation"] });
+      } catch (error) { evidence.advisorError = error instanceof Error ? error.message : "Advisor enrichment unavailable"; }
     }
     evidence.limitations = "JEBAT advisor classifications are low-confidence advisory signals only; they never grant authority or override the approved run contract. SEO findings are secondary evidence and do not replace built-in browser checks.";
     const artifact = storeEvidence(store, runId, "jebat-ecosystem-enrichment", evidence);
