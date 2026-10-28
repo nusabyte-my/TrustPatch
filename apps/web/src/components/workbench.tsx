@@ -15,6 +15,8 @@ export function Workbench() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [loadedRunId, setLoadedRunId] = useState<string | null>(null);
+  const [followUpBusy, setFollowUpBusy] = useState(false);
+  const [followUpError, setFollowUpError] = useState("");
   useEffect(() => {
     if (!run) return;
     const url = new URL(window.location.href);
@@ -63,14 +65,14 @@ export function Workbench() {
   }
   async function followUp() {
     if (!run || !message.trim()) return;
-    setBusy(true); setError("");
+    setBusy(true); setFollowUpBusy(true); setFollowUpError(""); setError("");
     try {
       const response = await fetch(`/api/runs/${run.id}/messages`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message }) });
       const data = await response.json() as { run?: RunView; error?: string };
       if (!response.ok || !data.run) throw new Error(data.error ?? "Instruction failed");
       setRun(data.run); setMessage(""); await refresh(run.id);
-    } catch (reason) { setError(reason instanceof Error ? reason.message : "Instruction failed"); }
-    finally { setBusy(false); }
+    } catch (reason) { setFollowUpError(reason instanceof Error ? reason.message : "Instruction failed"); }
+    finally { setBusy(false); setFollowUpBusy(false); }
   }
   async function cancel() { if (!run) return; await fetch(`/api/runs/${run.id}/cancel`, { method: "POST" }); await refresh(run.id); }
   return <>
@@ -79,7 +81,7 @@ export function Workbench() {
       {run && <button className="new-mission-button" type="button" onClick={() => { setRun(null); setEvents([]); window.history.replaceState(null, "", window.location.pathname); }}>Start a new mission</button>}
       {!run && <BulkAudit />}
       {error && <div className="error" role="alert">{error}</div>}
-      {run ? <AgentCommand run={run} events={events} busy={busy} message={message} onMessage={setMessage} onApprove={approve} onFollowUp={followUp} onCancel={cancel} /> : <section className="agent-empty"><div><p className="kicker">Seven roles. One controlled run.</p><h2>Choose the target.<br />Direct the team.</h2></div><div className="agent-empty-roles"><span>Mend coordinates</span><span>Inspector + Mapper investigate</span><span>SEO analyzes extraction</span><span>Recon observes reactive browser behavior</span><span>Repair patches approved files</span><span>Verifier proves the result</span></div></section>}
+      {run ? <AgentCommand run={run} events={events} busy={busy} message={message} onMessage={setMessage} onApprove={approve} onFollowUp={async () => { await followUp(); }} onCancel={cancel} followUpBusy={followUpBusy} followUpError={followUpError} onFollowUpComplete={() => { setTimeout(() => document.querySelector<HTMLButtonElement>(".command-approve")?.focus(), 0); }} /> : <section className="agent-empty"><div><p className="kicker">Seven roles. One controlled run.</p><h2>Choose the target.<br />Direct the team.</h2></div><div className="agent-empty-roles"><span>Mend coordinates</span><span>Inspector + Mapper investigate</span><span>SEO analyzes extraction</span><span>Recon observes reactive browser behavior</span><span>Repair patches approved files</span><span>Verifier proves the result</span></div></section>}
     </main>
     <footer><span>TrustPatch · Evidence before confidence</span><span>AI proposes. Tools verify. Humans authorize.</span></footer>
   </>;

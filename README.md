@@ -24,6 +24,8 @@ Local hackathon implementation for the Meta Global AI Developer Hackathon, Start
 - Red/Blue SEO operations: selectable mission mode challenges indexability, crawl policy, metadata, schema, content, internal links, and AI-answer readiness, then produces bounded optimization actions and verification targets. Evidence is stored as a Red/Blue ledger; no ranking, citation, traffic, or automatic rewrite claims.
 - SEO/AEO/GEO analysis: metadata, social previews, semantic structure, JSON-LD, content depth, internal links, answer extractability, robots, and sitemap discovery.
 - Scoped bulk authorized-site auditing with passive checks, per-site progress, and failure isolation. Verified by creating and completing an authorized `prodigylearning.my` audit with 3 findings; evidence navigation opens the stored run.
+- Per-finding Root Cause Analysis PDF reports: branded header, incident summary, observed evidence, source surface, Red/Blue analysis, verification targets, proof register, evidence URLs, SHA-256 metadata, and analysis limits.
+- Follow-up instructions now produce an actual evidence-backed Mend response, stored recommendation, next-tool action, and pending/error feedback instead of silently recording a message.
 - Findings, approval card, diff viewer, and Proof Receipt UI.
 - Meta Responses API tool-call planner for `AGENT_MODE=meta`; labeled deterministic `fixture-planner` for offline development.
 - GitHub draft-PR publication when credentials are configured; no merge or deployment path.

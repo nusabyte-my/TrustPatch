@@ -1,6 +1,6 @@
 import { store } from "./runtime";
 import {
-  createRun, getContract, getEvents, getRunView, grantApproval, publishDraftPr, setStatus, trustpatchPaths, updateContract, addEvent, assertResolvablePublicTarget
+  createRun, getContract, getEvents, getRunView, grantApproval, publishDraftPr, setStatus, trustpatchPaths, updateContract, addEvent, assertResolvablePublicTarget, answerFollowUp, storeFollowUp
 } from "@trustpatch/core";
 import { planTargetInstruction } from "@trustpatch/core";
 import { createRunSchema, inferScope, runContractSchema, type CreateRunInput } from "@trustpatch/contracts";
@@ -67,6 +67,8 @@ export async function messageRun(id: string, message: string) {
     return getRunView(store, id);
   }
   addEvent(store, id, "mend", "instruction.received", message);
+  const followUp = storeFollowUp(store, id, answerFollowUp(run.contract, run.status, run.proof?.findings ?? [], message));
+  addEvent(store, id, "mend", "instruction.answered", followUp.response, { evidenceId: followUp.evidenceId, nextTool: followUp.nextTool });
   return getRunView(store, id);
 }
 export async function cancelRun(id: string) {
