@@ -1,4 +1,9 @@
 .landing-hero { position:relative; isolation:isolate; }
+.proof-sticker { position:absolute; right:0; top:-48px; width:106px; transform:rotate(7deg); }
+.proof-sticker canvas { filter:drop-shadow(0 12px 12px rgba(17,27,36,.12)); }
+.proof-sticker>span { display:block; margin-top:-14px; color:var(--cobalt-dark); font-family:var(--font-display); font-size:11px; font-weight:600; text-align:center; }
+@media (max-width:1100px) { .proof-sticker { right:0; top:-48px; width:90px; } }
+@media (max-width:480px) { .proof-sticker { right:-4px; top:-40px; width:72px; } .proof-sticker>span { font-size:9px; margin-top:-12px; } }
 .hero-environment-grid { position:absolute; inset:0; z-index:-1; pointer-events:none; opacity:.25; background-image:linear-gradient(30deg,transparent 49.5%,#dce5e0 49.5%,#dce5e0 50.5%,transparent 50.5%),linear-gradient(-30deg,transparent 49.5%,#dce5e0 49.5%,#dce5e0 50.5%,transparent 50.5%); background-size:64px 36px; mask-image:linear-gradient(to bottom,transparent,#000 35%,#000 80%,transparent); }
 .impact-story { position:relative; }
 .impact-motion { position:relative; z-index:1; }

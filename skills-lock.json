@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "fun-isometric": {
+      "source": "kelvinkn17/skills",
+      "sourceType": "github",
+      "skillPath": "skills/fun-isometric/SKILL.md",
+      "computedHash": "48b9d26054674d7f39ece8f528706ded0929ccc0da235a2c00002a91a5258ba4"
+    }
+  }
+}
