@@ -14,7 +14,7 @@ export async function createAndExecuteRun(input: CreateRunInput) {
   const contract = runContractSchema.parse({
     objective: parsed.objective,
     targetUrl: parsed.targetUrl ?? targetPlan.targetUrl,
-    productionOrigin: parsed.productionOrigin ?? new URL(targetPlan.targetUrl).origin,
+    productionOrigin: parsed.productionOrigin ?? new URL(parsed.targetUrl ?? targetPlan.targetUrl).origin,
     repositoryPath: parsed.repositoryPath ? resolve(parsed.repositoryPath) : parsed.readOnly === false ? trustpatchPaths().fixturePath : `audit://${new URL(targetPlan.targetUrl).hostname}`,
     baseBranch: "main",
     createPr: parsed.createPr ?? !/stop before.*pr|don.?t open.*pr/i.test(parsed.objective),
