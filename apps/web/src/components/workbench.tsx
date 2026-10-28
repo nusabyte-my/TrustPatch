@@ -49,7 +49,7 @@ export function Workbench() {
       const data = await response.json() as { run?: RunView; error?: string };
       if (!response.ok || !data.run) throw new Error(data.error ?? "Run failed");
       setRun(data.run); await refresh(data.run.id);
-    } catch (reason) { setError(reason instanceof Error ? reason.message : "Run failed"); }
+    } catch (reason) { const message = reason instanceof Error ? reason.message : "Run failed"; setError(message.includes("targetUrl") || message.includes("Invalid URL") ? "Enter a valid website URL, such as https://nusabyte.my or nusabyte.my." : message); }
     finally { setBusy(false); }
   }
   async function approve() {
