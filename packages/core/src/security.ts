@@ -66,10 +66,17 @@ export async function inspectWebsiteSecurity(store: TrustpatchDb, runId: string,
 
 interface GithubRepo { full_name: string; default_branch: string; private: boolean; html_url: string }
 interface GithubFile { path: string; type: string; size: number }
-async function githubJson<T>(url: string): Promise<T> {
+async function githubJson<T>(url: string, explicitToken?: string): Promise<T> {
   const headers: Record<string, string> = { Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28", "User-Agent": "TrustPatch-Authorized-Inspection/0.1" };
-  if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
+  const token = explicitToken || process.env.GITHUB_TOKEN;
+  if (token) headers.Authorization = `Bearer ${token}`;
   const response = await fetch(url, { headers, signal: AbortSignal.timeout(20_000) });
+  if (response.status === 404 && !token) {
+    throw new Error("GitHub repository returned 404. If this is a PRIVATE repository, provide a valid GitHub Personal Access Token.");
+  }
+  if (response.status === 401 || response.status === 403) {
+    throw new Error(`GitHub API authentication failed (${response.status}). Provide or refresh your GitHub token.`);
+  }
   if (!response.ok) throw new Error(`GitHub API returned ${response.status}`);
   return response.json() as Promise<T>;
 }
@@ -84,19 +91,32 @@ export async function inspectGithubSecurity(store: TrustpatchDb, runId: string, 
   const match = contract.targetUrl.match(/^https:\/\/github\.com\/([^/]+)\/([^/]+?)(?:\.git)?\/?$/i);
   if (!match) throw new Error("GitHub targets must use https://github.com/owner/repository");
   const owner = match[1]!, repoName = match[2]!;
-  addEvent(store, runId, "recon", "activity", `GitHub security inspection starting for ${owner}/${repoName}. Only repository content and metadata are inspected; secrets are redacted.`, { activity: "security", status: "active" });
-  const repo = await githubJson<GithubRepo>(`https://api.github.com/repos/${owner}/${repoName}`);
+  const token = contract.githubToken || process.env.GITHUB_TOKEN;
+  addEvent(store, runId, "recon", "activity", `GitHub security inspection starting for ${owner}/${repoName}. ${token ? "Authenticated with token (private repository access enabled)." : "Unauthenticated (public repository access only)."}. Secrets are strictly redacted.`, { activity: "security", status: "active", authenticated: Boolean(token) });
+  const repo = await githubJson<GithubRepo>(`https://api.github.com/repos/${owner}/${repoName}`, token);
   const branch = repo.default_branch;
-  const tree = await githubJson<{ tree: GithubFile[]; truncated: boolean }>(`https://api.github.com/repos/${owner}/${repoName}/git/trees/${encodeURIComponent(branch)}?recursive=1`);
+  addEvent(store, runId, "recon", "activity", `Repository verified: ${repo.full_name} (${repo.private ? "PRIVATE" : "PUBLIC"}). Reading Git tree on branch '${branch}'...`, { activity: "security", status: "info", isPrivate: repo.private });
+  const tree = await githubJson<{ tree: GithubFile[]; truncated: boolean }>(`https://api.github.com/repos/${owner}/${repoName}/git/trees/${encodeURIComponent(branch)}?recursive=1`, token);
   const files = selectGithubFiles(tree.tree);
   const findings: Finding[] = [];
   const manifestContents: Array<{ path: string; content: string }> = [];
   const scanned: Array<{ path: string; sha256Evidence: boolean }> = [];
   for (const file of files) {
+    let content = "";
     const rawUrl = `https://raw.githubusercontent.com/${encodeURIComponent(owner)}/${encodeURIComponent(repoName)}/${encodeURIComponent(branch)}/${file.path.split("/").map(encodeURIComponent).join("/")}`;
-    const response = await fetchPublic(rawUrl);
-    if (!response.ok) throw new Error(`GitHub raw content returned ${response.status} for ${file.path}`);
-    const content = await response.text();
+    const headers: Record<string, string> = {};
+    if (token) headers.Authorization = `Bearer ${token}`;
+    const response = await fetch(rawUrl, { headers }).catch(() => null);
+    if (response && response.ok) {
+      content = await response.text();
+    } else {
+      // Try API fallback for private repositories
+      const apiBlob = await githubJson<{ content?: string; encoding?: string }>(`https://api.github.com/repos/${owner}/${repoName}/contents/${file.path}?ref=${branch}`, token).catch(() => null);
+      if (apiBlob?.content && apiBlob.encoding === "base64") {
+        content = Buffer.from(apiBlob.content, "base64").toString("utf8");
+      }
+    }
+    if (!content) continue;
     const evidence = storeEvidence(store, runId, "repo-content", { repository: repo.full_name, path: file.path, content });
     manifestContents.push({ path: file.path, content });
     scanned.push({ path: file.path, sha256Evidence: true });

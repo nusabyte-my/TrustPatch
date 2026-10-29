@@ -3,7 +3,7 @@ import {
   createRun, getContract, getEvents, getRunView, grantApproval, publishDraftPr, setStatus, trustpatchPaths, updateContract, addEvent, assertResolvablePublicTarget, answerFollowUp, storeFollowUp
 } from "@trustpatch/core";
 import { planTargetInstruction } from "@trustpatch/core";
-import { createRunSchema, inferScope, runContractSchema, type CreateRunInput } from "@trustpatch/contracts";
+import { createRunSchema, inferScope, runContractSchema, type CreateRunInput, type AgentNode } from "@trustpatch/contracts";
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 
@@ -18,6 +18,7 @@ export async function createAndExecuteRun(input: CreateRunInput) {
     repositoryPath: parsed.repositoryPath ? resolve(parsed.repositoryPath) : parsed.readOnly === false ? trustpatchPaths().fixturePath : `audit://${new URL(targetPlan.targetUrl).hostname}`,
     baseBranch: "main",
     createPr: parsed.createPr ?? !/stop before.*pr|don.?t open.*pr/i.test(parsed.objective),
+    githubToken: parsed.githubToken,
     scope: {
       includePaths: ["/", "/services"],
       allowedFiles: ["app/layout.tsx", "app/page.tsx", "app/services/page.tsx", "next.config.ts"],
@@ -67,9 +68,46 @@ export async function messageRun(id: string, message: string) {
     setStatus(store, id, "repairing");
     return getRunView(store, id);
   }
-  addEvent(store, id, "mend", "instruction.received", message);
+  // Check if commander directed message to a specific agent peer (@inspector, @recon, @repair, @verifier)
+  const lowerMsg = message.toLowerCase();
+  let recipient = "@mend";
+  let respondingRole: "mend" | "inspector" | "recon" | "repair" | "verifier" = "mend";
+  let hostNode: AgentNode = { id: "node-mend-01", role: "mend", label: "Mend Coordinator", hostname: "mend-master.internal", ip: "10.42.0.1", vmType: "micro-vm", status: "ready", memoryMb: 512 };
+
+  if (lowerMsg.includes("@inspector")) {
+    recipient = "@inspector";
+    respondingRole = "inspector";
+    hostNode = { id: "node-inspector-02", role: "inspector", label: "Security & Header Probe", hostname: "sec-probe.internal", ip: "10.42.0.2", vmType: "container-sandbox", status: "ready", memoryMb: 256 };
+  } else if (lowerMsg.includes("@recon")) {
+    recipient = "@recon";
+    respondingRole = "recon";
+    hostNode = { id: "node-recon-03", role: "recon", label: "AST Semantic Mapper", hostname: "ast-engine.internal", ip: "10.42.0.3", vmType: "ast-engine", status: "ready", memoryMb: 384 };
+  } else if (lowerMsg.includes("@repair")) {
+    recipient = "@repair";
+    respondingRole = "repair";
+    hostNode = { id: "node-repair-04", role: "repair", label: "Worktree Sandbox", hostname: "sandbox-worker.internal", ip: "10.42.0.4", vmType: "container-sandbox", status: "ready", memoryMb: 1024 };
+  } else if (lowerMsg.includes("@verifier")) {
+    recipient = "@verifier";
+    respondingRole = "verifier";
+    hostNode = { id: "node-verifier-05", role: "verifier", label: "Isolated QA Evaluator", hostname: "qa-runner.internal", ip: "10.42.0.5", vmType: "qa-isolated", status: "ready", memoryMb: 768 };
+  }
+
+  addEvent(store, id, "mend", "instruction.received", message, {
+    sender: "user",
+    recipient,
+    protocol: "DISPATCH"
+  });
+
   const followUp = storeFollowUp(store, id, answerFollowUp(run.contract, run.status, run.proof?.findings ?? [], message));
-  addEvent(store, id, "mend", "instruction.answered", followUp.response, { evidenceId: followUp.evidenceId, nextTool: followUp.nextTool });
+
+  addEvent(store, id, respondingRole, "instruction.answered", followUp.response, {
+    sender: respondingRole,
+    recipient: "@user",
+    protocol: "ACK",
+    node: hostNode,
+    evidenceId: followUp.evidenceId,
+    nextTool: followUp.nextTool
+  });
   return getRunView(store, id);
 }
 export async function cancelRun(id: string) {

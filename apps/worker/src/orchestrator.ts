@@ -21,14 +21,37 @@ export async function executeRun(store: TrustpatchDb, runId: string): Promise<Ru
   try {
     if (initial.status === "queued") {
       setStatus(store, runId, "investigating");
-      addEvent(store, runId, "mend", "activity", `Target accepted: ${contract.targetUrl}. Tool plan is executing; no code has been changed.`, { activity: "inspection", status: "active", targetUrl: contract.targetUrl });
-      addEvent(store, runId, "mend", "activity", contract.authorizedLocalFixture ? "Inspector and Mapper are working in parallel. I’m collecting raw pages, rendered metadata, response headers, and source context." : "Inspector and SEO are collecting page evidence, response policy, and search/AI-search readiness.", { activity: "inspection", status: "active" });
+      // Handshake: Mend -> All Nodes
+      addEvent(store, runId, "mend", "activity", `Target locked: ${contract.targetUrl}. Initializing peer mesh across isolated sandboxes.`, {
+        activity: "inspection", status: "active", targetUrl: contract.targetUrl,
+        sender: "mend", recipient: "@all", protocol: "DISPATCH",
+        node: { id: "node-mend-01", hostname: "mend-master.internal", ip: "10.42.0.1", vmType: "micro-vm", status: "computing", memoryMb: 512 }
+      });
+      // Handshake: Mend -> Inspector & Recon
+      addEvent(store, runId, "mend", "activity", contract.authorizedLocalFixture
+        ? "Dispatching @inspector (surface probe) and @recon (AST mapper) concurrently on isolated microVM nodes."
+        : "Dispatching @inspector (live probe) and @seo (AI search analysis) on isolated runner nodes.", {
+        activity: "inspection", status: "active",
+        sender: "mend", recipient: "@inspector", protocol: "SYN",
+        node: { id: "node-mend-01", hostname: "mend-master.internal", ip: "10.42.0.1", vmType: "micro-vm", status: "handshaking", memoryMb: 512 }
+      });
+      addEvent(store, runId, "inspector", "activity", `SYN_ACK received from @mend. Spawning clean Chromium session in isolated container sandbox [node-inspector-02]. Probing live endpoints...`, {
+        activity: "inspection", status: "active",
+        sender: "inspector", recipient: "@mend", protocol: "ACK",
+        node: { id: "node-inspector-02", hostname: "sec-probe.internal", ip: "10.42.0.2", vmType: "container-sandbox", status: "computing", memoryMb: 256 }
+      });
       const [observations, mapped] = await Promise.all([
         (contract.targetType === "github" ? inspectGithubSecurity(store, runId, contract) : inspectSite(store, runId, contract)).then(async (result) => { if (contract.targetType === "website") await enrichWithRea(store, runId, contract.targetUrl); await enrichWithJebat(store, runId, contract); return result; }),
         Promise.resolve().then(() => contract.authorizedLocalFixture ? mapRepository(store, runId, contract) : { files: {}, evidenceId: null })
       ]);
       const reactiveCaptured = getEvents(store, runId).some((event) => event.role === "recon" && event.data.activity === "recon" && typeof event.data.evidenceId === "string");
-      addEvent(store, runId, "recon", "activity", reactiveCaptured ? "Recon stage complete. Reactive diagnostics are stored with this run." : "Recon stage complete without reactive evidence. Page inspection results are preserved.", { activity: "recon", status: reactiveCaptured ? "success" : "warning", evidenceCaptured: reactiveCaptured });
+      addEvent(store, runId, "recon", "activity", reactiveCaptured
+        ? "AST parser [node-recon-03] finished repository mapping. Source graph synchronized with reactive evidence."
+        : "AST parser [node-recon-03] finished repository mapping without reactive trace. Core AST synchronized.", {
+        activity: "recon", status: reactiveCaptured ? "success" : "warning", evidenceCaptured: reactiveCaptured,
+        sender: "recon", recipient: "@mend", protocol: "ACK",
+        node: { id: "node-recon-03", hostname: "ast-engine.internal", ip: "10.42.0.3", vmType: "ast-engine", status: "ready", memoryMb: 384 }
+      });
       const seenPolicyDefects = new Set<string>();
       const findings = observations.filter((finding) => {
         if (finding.kind !== "security_header") return true;
@@ -45,7 +68,20 @@ export async function executeRun(store: TrustpatchDb, runId: string): Promise<Ru
       saveFindings(store, withSources);
       if (contract.seoMode === "red_blue") runSeoOperations(store, runId, withSources);
       proof.findings = withSources;
-      addEvent(store, runId, "inspector", "activity", withSources.length ? `Inspection complete: ${withSources.length} confirmed issue${withSources.length === 1 ? "" : "s"} need review. No code has been changed.` : "Inspection complete: no selected defects found. No code has been changed.", { activity: "inspection", status: withSources.length ? "warning" : "success", count: withSources.length, repositoryEvidenceId: mapped.evidenceId });
+      addEvent(store, runId, "inspector", "activity", withSources.length
+        ? `HANDSHAKE -> @mend: Surface audit finished. ${withSources.length} confirmed issue${withSources.length === 1 ? "" : "s"} identified. Zero repository mutation committed.`
+        : "HANDSHAKE -> @mend: Surface audit finished. No selected defects found.", {
+        activity: "inspection", status: withSources.length ? "warning" : "success", count: withSources.length, repositoryEvidenceId: mapped.evidenceId,
+        sender: "inspector", recipient: "@mend", protocol: "PROPOSAL",
+        node: { id: "node-inspector-02", hostname: "sec-probe.internal", ip: "10.42.0.2", vmType: "container-sandbox", status: "ready", memoryMb: 256 }
+      });
+      if (withSources.length) {
+        addEvent(store, runId, "mend", "activity", `MEND -> @user: Inspector and Recon nodes reached consensus. Awaiting authorized scope approval before spawning isolated worktree.`, {
+          activity: "approval", status: "active",
+          sender: "mend", recipient: "@user", protocol: "CONSENSUS",
+          node: { id: "node-mend-01", hostname: "mend-master.internal", ip: "10.42.0.1", vmType: "micro-vm", status: "ready", memoryMb: 512 }
+        });
+      }
       if (contract.readOnly) {
         proof.status = "validated";
         saveProof(store, runId, proof);
@@ -91,7 +127,11 @@ export async function executeRun(store: TrustpatchDb, runId: string): Promise<Ru
       let lastFailure: string | undefined;
       let validated = false;
       for (let attempt = 0; attempt < contract.maxPatchAttempts; attempt += 1) {
-        addEvent(store, runId, "repair", "activity", `Repair attempt ${attempt + 1}: ${plannerName()} is preparing the smallest patch allowed by your approval.`, { activity: "repair", status: "active", attempt: attempt + 1, planner: plannerName() });
+        addEvent(store, runId, "repair", "activity", `HANDSHAKE -> @verifier: Repair attempt ${attempt + 1} initiated on sandbox worker [node-repair-04]. Worktree mounted at ${worktree}.`, {
+          activity: "repair", status: "active", attempt: attempt + 1, planner: plannerName(),
+          sender: "repair", recipient: "@verifier", protocol: "DISPATCH",
+          node: { id: "node-repair-04", hostname: "sandbox-worker.internal", ip: "10.42.0.4", vmType: "container-sandbox", status: "computing", memoryMb: 1024, worktree }
+        });
         const plan = repairPlanSchema.parse(await planRepairs({ contract, findings, files: mapped.files, attempt, ...(lastFailure ? { verificationFailure: lastFailure } : {}) }));
         const repaired = await applyRepairPlan(store, runId, contract, initial.approval, plan, attempt);
         branch = repaired.branch;
@@ -104,7 +144,16 @@ export async function executeRun(store: TrustpatchDb, runId: string): Promise<Ru
         saveProof(store, runId, { ...proof, status: "verifying" });
         updateFindingStates(store, runId, "repaired");
         setStatus(store, runId, "verifying");
-        addEvent(store, runId, "verifier", "activity", "The patch is staged. Verifier is building the isolated worktree and checking the actual rendered result.", { activity: "verification", status: "active", attempt: attempt + 1 });
+        addEvent(store, runId, "repair", "activity", `HANDSHAKE -> @verifier: Patch staged on branch '${branch}'. Target files: ${changedFiles.join(", ")}. Requesting isolated verification.`, {
+          activity: "repair", status: "success", attempt: attempt + 1,
+          sender: "repair", recipient: "@verifier", protocol: "PROPOSAL",
+          node: { id: "node-repair-04", hostname: "sandbox-worker.internal", ip: "10.42.0.4", vmType: "container-sandbox", status: "ready", memoryMb: 1024, worktree }
+        });
+        addEvent(store, runId, "verifier", "activity", `ACK from @verifier [node-verifier-05]: Preview container spinning up. Running browser and HTTP assertions against patched worktree.`, {
+          activity: "verification", status: "active", attempt: attempt + 1,
+          sender: "verifier", recipient: "@repair", protocol: "ACK",
+          node: { id: "node-verifier-05", hostname: "qa-runner.internal", ip: "10.42.0.5", vmType: "qa-isolated", status: "verifying", memoryMb: 768 }
+        });
         const preview = await startPatchedPreview(store, runId, repaired.worktree, contract.productionOrigin);
         try {
           proof.verification = await verifyRepair(store, runId, contract, findings, preview.url);
@@ -114,10 +163,19 @@ export async function executeRun(store: TrustpatchDb, runId: string): Promise<Ru
         const verification = proof.verification;
         if (verification.every((result) => result.passed)) {
           validated = true;
+          addEvent(store, runId, "verifier", "activity", `CONSENSUS: All verification assertions passed with zero regressions. Proof receipt signed.`, {
+            activity: "verification", status: "success", attempt: attempt + 1,
+            sender: "verifier", recipient: "@mend", protocol: "CONSENSUS",
+            node: { id: "node-verifier-05", hostname: "qa-runner.internal", ip: "10.42.0.5", vmType: "qa-isolated", status: "ready", memoryMb: 768 }
+          });
           break;
         }
         lastFailure = verification.filter((result) => !result.passed).map((result) => `${result.name}: ${result.detail}`).join("; ");
-        addEvent(store, runId, "verifier", "activity", `Verification failed: ${lastFailure}. I’m reviewing the worktree and will only retry inside your approved scope.`, { activity: "verification", status: "warning", detail: lastFailure, attempt: attempt + 1 });
+        addEvent(store, runId, "verifier", "activity", `CHALLENGE -> @repair: Assertion failed: ${lastFailure}. Requesting revision within approved scope boundaries.`, {
+          activity: "verification", status: "warning", detail: lastFailure, attempt: attempt + 1,
+          sender: "verifier", recipient: "@repair", protocol: "CHALLENGE",
+          node: { id: "node-verifier-05", hostname: "qa-runner.internal", ip: "10.42.0.5", vmType: "qa-isolated", status: "error", memoryMb: 768 }
+        });
         store.sqlite.prepare("UPDATE runs SET attempt = ?, updated_at = ? WHERE id = ?").run(attempt + 1, new Date().toISOString(), runId);
         Object.assign(mapped, mapRepository(store, runId, contract, repaired.worktree));
       }

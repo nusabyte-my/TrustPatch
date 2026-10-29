@@ -3,6 +3,21 @@ import { z } from "zod";
 export const AGENT_NAME = "Mend";
 export const agentRoleSchema = z.enum(["mend", "inspector", "mapper", "repair", "verifier", "seo", "recon"]);
 export type AgentRole = z.infer<typeof agentRoleSchema>;
+export const agentProtocolSchema = z.enum(["SYN", "ACK", "DISPATCH", "CHALLENGE", "PROPOSAL", "CONSENSUS", "INFO"]);
+export type AgentProtocol = z.infer<typeof agentProtocolSchema>;
+export const agentNodeSchema = z.object({
+  id: z.string(),
+  role: agentRoleSchema,
+  label: z.string(),
+  hostname: z.string(),
+  ip: z.string(),
+  vmType: z.enum(["micro-vm", "container-sandbox", "ast-engine", "qa-isolated"]),
+  status: z.enum(["idle", "handshaking", "computing", "verifying", "ready", "error"]),
+  memoryMb: z.number(),
+  worktree: z.string().nullable().optional()
+});
+export type AgentNode = z.infer<typeof agentNodeSchema>;
+
 export const runStatusSchema = z.enum([
   "queued", "investigating", "awaiting_approval", "repairing", "verifying",
   "awaiting_user", "validated", "blocked", "paused_provider_error", "cancelled"
@@ -34,6 +49,7 @@ export const runContractSchema = z.object({
   authorizedLocalFixture: z.boolean().default(false),
   targetType: z.enum(["website", "github"]).default("website"),
   scope: scopeSchema,
+  githubToken: z.string().optional(),
   createPr: z.boolean().default(false),
   maxPages: z.number().int().min(1).max(50).default(12),
   maxPatchAttempts: z.number().int().min(1).max(3).default(3)
@@ -49,6 +65,7 @@ export const createRunSchema = z.object({
   targetType: z.enum(["website", "github"]).default("website").optional(),
   seoMode: z.enum(["standard", "red_blue"]).default("standard").optional(),
   ownershipConfirmed: z.literal(true),
+  githubToken: z.string().optional(),
   createPr: z.boolean().optional()
 });
 export type CreateRunInput = z.infer<typeof createRunSchema>;
