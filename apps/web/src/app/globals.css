@@ -1601,7 +1601,7 @@ footer { border-top:1px solid var(--border); padding:24px clamp(20px,4vw,64px); 
   display: flex;
   flex-direction: column;
   gap: 12px;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 10px 30px -12px rgba(20, 24, 22, 0.06);
   overflow: hidden;
 }
@@ -1609,13 +1609,17 @@ footer { border-top:1px solid var(--border); padding:24px clamp(20px,4vw,64px); 
   transform: translateY(-2px);
 }
 .card-violet:hover {
-  box-shadow: 0 20px 40px -12px rgba(124, 58, 237, 0.2);
+  box-shadow: 0 20px 40px -12px rgba(124, 58, 237, 0.28);
 }
 .card-amber:hover {
-  box-shadow: 0 20px 40px -12px rgba(201, 122, 64, 0.25);
+  box-shadow: 0 20px 40px -12px rgba(201, 122, 64, 0.32);
 }
 .card-emerald:hover {
-  box-shadow: 0 20px 40px -12px rgba(47, 111, 85, 0.22);
+  box-shadow: 0 20px 40px -12px rgba(47, 111, 85, 0.3);
+}
+.jc-feature-card:focus-within {
+  outline: 2px solid #7c3aed;
+  outline-offset: 3px;
 }
 
 /* Harsh gradient left stripes */

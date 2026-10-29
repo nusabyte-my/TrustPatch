@@ -1,10 +1,8 @@
-import { Check, ShieldCheck } from "lucide-react";
 import { Workbench } from "./workbench";
 import { ImpactCase } from "./impact-case";
-import { ImpactMotion } from "./impact-motion";
 import { IntegrationStatus } from "./integration-status";
 import { JebatFeatureCards } from "./jebat-feature-cards";
-import { HeroCtaButtons } from "./hero-cta-buttons";
+import { HeroActions } from "./premium-hero";
 import { NavHeader } from "./nav-header";
 import type { ImpactCase as ImpactData } from "../server/impact";
 
@@ -14,59 +12,8 @@ export function LandingHero({ impact }: { impact: ImpactData | null }) {
       {/* Topbar Client Navigation (Diff Modal & Launch CTAs) */}
       <NavHeader />
 
-      {/* ── IMMERSIVE HERO SECTION ── */}
-      <section className="landing-hero jc-hero-rehaul" id="console">
-        <div className="hero-copy jc-hero-content">
-          <div className="hero-kicker-row">
-            <span className="hero-status-dot" />
-            <span className="kicker-pill">META GLOBAL AI DEVELOPER HACKATHON 2026</span>
-          </div>
-
-          <h1 className="jc-hero-headline">
-            <span>Autonomous Code Repair.</span>
-            <br />
-            <span className="jc-headline-sub">Verified in Sandbox Isolation.</span>
-          </h1>
-
-          <p className="hero-description jc-hero-desc">
-            Direct an autonomous swarm of specialist agents communicating over TAP-1.
-            They inspect live HTTP headers, map syntax ASTs, challenge repairs in ephemeral Git worktrees,
-            and deliver cryptographic proof receipts before requesting human authorization.
-          </p>
-
-          <HeroCtaButtons />
-
-          {/* Clean Boundary List with Real-World Meaning (Nielsen Heuristics 2 & 8) */}
-          <div className="hero-guarantees-row">
-            <span className="guarantee-label">INVARIANTS:</span>
-            <div className="guarantee-item">
-              <Check size={14} className="pill-check" />
-              <span>Peer-to-Peer Protocol (TAP-1)</span>
-            </div>
-            <div className="guarantee-item">
-              <Check size={14} className="pill-check" />
-              <span>OWASP AST10 Guardrails</span>
-            </div>
-            <div className="guarantee-item">
-              <Check size={14} className="pill-check" />
-              <span>Isolated Worktrees (Zero Live Mutation)</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Live Verifier Story Player */}
-        <div className="hero-impact jc-hero-impact-card" id="evidence">
-          {impact ? (
-            <ImpactMotion impact={impact} />
-          ) : (
-            <div className="impact-motion impact-motion-empty">
-              <ShieldCheck size={30} />
-              <h2>Your first proof starts here.</h2>
-              <p>Run the authorized fixture to see an actual repair sequence.</p>
-            </div>
-          )}
-        </div>
-      </section>
+      {/* ── PREMIUM HERO WITH ANIMATED TAP-1 MESH ── */}
+      <HeroActions />
 
       {/* ── 3-PILLAR CAPABILITIES GRID (FULL WIDTH) ── */}
       <JebatFeatureCards />

@@ -7,6 +7,7 @@ import "@fontsource/inter/600.css";
 import "@fontsource/geist-mono/400.css";
 import "./globals.css";
 import "./landing.css";
+import "./premium.css";
 import "./agent-command.css";
 import "./mission.css";
 import "./workflow.css";
